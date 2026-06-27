@@ -1,0 +1,364 @@
+.shell {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--area-section-background);
+  color: var(--area-section-foreground);
+}
+
+.viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  scrollbar-width: none;
+}
+
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.world {
+  position: relative;
+  width: 300%;
+  height: 200%;
+}
+
+.panel {
+  position: absolute;
+  display: flex;
+  width: 33.333333%;
+  height: 50%;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--area-section-background);
+}
+
+.eyesPanel {
+  top: 0;
+  left: 0;
+}
+
+.homePanel {
+  top: 0;
+  left: 33.333333%;
+}
+
+.earsPanel {
+  top: 0;
+  left: 66.666667%;
+}
+
+.systemsPanel {
+  top: 50%;
+  left: 33.333333%;
+}
+
+.artboard {
+  position: relative;
+  width: min(100vw, calc(100svh * 4 / 3));
+  aspect-ratio: 4 / 3;
+  flex: 0 0 auto;
+}
+
+.areaCluster {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 78.325%;
+  height: 74.1%;
+  transform: translate(-50%, -50%);
+}
+
+.areaEntry {
+  position: absolute;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  transform: translateZ(0);
+}
+
+.areaEntry:focus-visible {
+  outline: clamp(1px, 0.18vw, 3px) solid rgb(255 255 255 / 0.8);
+  outline-offset: clamp(2px, 0.5vw, 8px);
+}
+
+.entryPiece {
+  position: absolute;
+  display: block;
+  transform-origin: center;
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 220ms ease;
+  will-change: transform;
+}
+
+.entryPiece img,
+.czReturnButton img {
+  object-fit: contain;
+}
+
+.entryLabel {
+  z-index: 1;
+}
+
+.entryArt {
+  z-index: 2;
+}
+
+.eyesEntry {
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 19.214811%;
+  height: 56.275304%;
+}
+
+.eyesLabel {
+  top: 0;
+  left: 0;
+  width: 81.063123%;
+  height: 21.582734%;
+}
+
+.eyesArt {
+  top: 13.509193%;
+  left: 0.996678%;
+  width: 99.003322%;
+  height: 86.490807%;
+}
+
+.earsEntry {
+  top: 2.834233%;
+  left: 78.710501%;
+  z-index: 3;
+  width: 21.289499%;
+  height: 56.275304%;
+}
+
+.earsLabel {
+  top: 0;
+  left: 26.986507%;
+  width: 73.013493%;
+  height: 21.502798%;
+}
+
+.earsArt {
+  top: 8.872902%;
+  left: 0;
+  width: 97.601199%;
+  height: 91.127098%;
+}
+
+.systemsEntry {
+  top: 58.794872%;
+  left: 37.535908%;
+  z-index: 4;
+  width: 27.001277%;
+  height: 41.205578%;
+}
+
+.systemsLabel {
+  top: 0;
+  left: 29.314421%;
+  width: 70.685579%;
+  height: 31.331878%;
+}
+
+.systemsArt {
+  top: 19.323144%;
+  left: 0;
+  width: 86.524823%;
+  height: 80.676856%;
+}
+
+.eyesEntry:hover .eyesLabel,
+.eyesEntry:focus-visible .eyesLabel {
+  transform: rotate(-3.5deg) scale(1.045);
+}
+
+.eyesEntry:hover .eyesArt,
+.eyesEntry:focus-visible .eyesArt {
+  transform: rotate(2.25deg) scale(1.035);
+}
+
+.earsEntry:hover .earsLabel,
+.earsEntry:focus-visible .earsLabel {
+  transform: rotate(3.25deg) scale(1.045);
+}
+
+.earsEntry:hover .earsArt,
+.earsEntry:focus-visible .earsArt {
+  transform: rotate(-2deg) scale(1.03);
+}
+
+.systemsEntry:hover .systemsLabel,
+.systemsEntry:focus-visible .systemsLabel {
+  transform: rotate(-2.5deg) scale(1.05);
+}
+
+.systemsEntry:hover .systemsArt,
+.systemsEntry:focus-visible .systemsArt {
+  transform: rotate(1.75deg) scale(1.035);
+}
+
+.eyesEntry.isPressed .eyesLabel {
+  transform: rotate(-13deg) scale(1.13);
+}
+
+.eyesEntry.isPressed .eyesArt {
+  transform: rotate(8deg) scale(1.1);
+}
+
+.earsEntry.isPressed .earsLabel {
+  transform: rotate(12deg) scale(1.12);
+}
+
+.earsEntry.isPressed .earsArt {
+  transform: rotate(-8deg) scale(1.09);
+}
+
+.systemsEntry.isPressed .systemsLabel {
+  transform: rotate(-10deg) scale(1.13);
+}
+
+.systemsEntry.isPressed .systemsArt {
+  transform: rotate(7deg) scale(1.1);
+}
+
+.returnButton {
+  position: absolute;
+  z-index: 5;
+  display: grid;
+  width: clamp(2.75rem, 5vw, 4.75rem);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.86;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.returnButton:hover,
+.returnButton:focus-visible {
+  opacity: 1;
+}
+
+.returnButton:focus-visible {
+  outline: clamp(1px, 0.18vw, 3px) solid rgb(255 255 255 / 0.8);
+  outline-offset: clamp(2px, 0.45vw, 8px);
+}
+
+.returnButton:active {
+  transform: scale(0.92) rotate(8deg);
+}
+
+.returnArrow {
+  display: block;
+  width: 34%;
+  height: 34%;
+  border: solid currentColor;
+  border-width: 0 clamp(2px, 0.3vw, 4px) clamp(2px, 0.3vw, 4px) 0;
+}
+
+.arrowRight {
+  transform: rotate(-45deg);
+}
+
+.arrowLeft {
+  transform: rotate(135deg);
+}
+
+.arrowUp {
+  transform: rotate(-135deg);
+}
+
+.returnFromEyes {
+  top: 50%;
+  right: clamp(1.25rem, 4vw, 4.5rem);
+  transform: translateY(-50%);
+}
+
+.returnFromEyes:active {
+  transform: translateY(-50%) scale(0.92) rotate(8deg);
+}
+
+.returnFromEars {
+  top: 50%;
+  left: clamp(1.25rem, 4vw, 4.5rem);
+  transform: translateY(-50%);
+}
+
+.returnFromEars:active {
+  transform: translateY(-50%) scale(0.92) rotate(-8deg);
+}
+
+.returnFromSystems {
+  top: clamp(1.25rem, 4vw, 4.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.returnFromSystems:active {
+  transform: translateX(-50%) scale(0.92) rotate(8deg);
+}
+
+.czReturnButton {
+  position: absolute;
+  right: max(env(safe-area-inset-right), clamp(1.25rem, 4vw, 4.5rem));
+  bottom: max(env(safe-area-inset-bottom), clamp(1.25rem, 4vw, 4.5rem));
+  z-index: 9;
+  display: block;
+  width: clamp(5rem, 11vw, 9rem);
+  aspect-ratio: 306 / 124;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  opacity: 0.86;
+  transform-origin: center;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.czReturnButton:hover,
+.czReturnButton:focus-visible {
+  opacity: 1;
+}
+
+.czReturnButton:focus-visible {
+  outline: clamp(1px, 0.18vw, 3px) solid rgb(255 255 255 / 0.8);
+  outline-offset: clamp(2px, 0.45vw, 8px);
+}
+
+.czReturnButton:active {
+  transform: scale(0.94) rotate(2deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entryPiece,
+  .returnButton,
+  .czReturnButton {
+    transition: none;
+  }
+
+  .areaEntry:hover .entryPiece,
+  .areaEntry:focus-visible .entryPiece,
+  .areaEntry.isPressed .entryPiece,
+  .returnButton:active,
+  .czReturnButton:active {
+    transform: none;
+  }
+}

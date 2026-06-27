@@ -1,0 +1,67 @@
+.button {
+  position: absolute;
+  left: 50%;
+  z-index: 8;
+  display: grid;
+  width: clamp(2.75rem, 5vw, 4.75rem);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  opacity: 0.86;
+  transform: translateX(-50%);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.top {
+  top: clamp(1.25rem, 4vw, 4.5rem);
+}
+
+.bottom {
+  bottom: clamp(1.25rem, 4vw, 4.5rem);
+}
+
+.button:hover,
+.button:focus-visible {
+  opacity: 1;
+}
+
+.button:focus-visible {
+  outline: clamp(1px, 0.18vw, 3px) solid rgb(255 255 255 / 0.8);
+  outline-offset: clamp(2px, 0.45vw, 8px);
+}
+
+.button:active {
+  transform: translateX(-50%) scale(0.92) rotate(8deg);
+}
+
+.arrow {
+  display: block;
+  width: 34%;
+  height: 34%;
+  border: solid currentColor;
+  border-width: 0 clamp(2px, 0.3vw, 4px) clamp(2px, 0.3vw, 4px) 0;
+}
+
+.up .arrow {
+  transform: rotate(-135deg);
+}
+
+.down .arrow {
+  transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+
+  .button:active {
+    transform: translateX(-50%);
+  }
+}

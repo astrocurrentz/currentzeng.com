@@ -1,0 +1,28 @@
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  {
+    files: ["**/*.{js,jsx,ts,tsx,mjs,cjs}"],
+    rules: {
+      "max-lines": [
+        "warn",
+        { max: 600, skipBlankLines: true, skipComments: true },
+      ],
+    },
+  },
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "node_modules/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;

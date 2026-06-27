@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--site-background);
+  --color-foreground: var(--site-foreground);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--site-background);
+  color: var(--site-foreground);
+  font-family: var(--site-font-sans);
+  margin: 0;
+}
