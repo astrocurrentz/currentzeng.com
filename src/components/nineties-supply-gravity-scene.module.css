@@ -1,0 +1,12 @@
+.composition {
+  --nineties-supply-carousel-width: clamp(14rem, 25vw, 20rem);
+
+  position: absolute;
+  inset: 0;
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .composition {
+    --nineties-supply-carousel-width: min(68%, 17rem);
+  }
+}

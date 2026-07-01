@@ -1,0 +1,402 @@
+.visualWorks {
+  --title-rail-width: clamp(2.5rem, 4vw, 6rem);
+
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--area-section-foreground);
+}
+
+.title {
+  position: absolute;
+  top: 50%;
+  left: calc(env(safe-area-inset-left, 0px) + 0.5rem);
+  z-index: 4;
+  margin: 0;
+  color: currentColor;
+  font-family: var(--font-brand), "Arial Black", Impact, sans-serif;
+  font-size: clamp(1rem, 2.45vw, 6.125rem);
+  font-weight: 900;
+  line-height: 0.88;
+  text-orientation: mixed;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+}
+
+.galleryViewport {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+}
+
+.artboard {
+  position: relative;
+  width: min(100vw, calc(100svh * 4 / 3));
+  aspect-ratio: 4 / 3;
+  flex: 0 0 auto;
+}
+
+.workButton {
+  position: absolute;
+  top: var(--work-top);
+  left: var(--work-left);
+  display: block;
+  width: var(--work-width);
+  aspect-ratio: var(--work-aspect-ratio);
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  transform: translateZ(0);
+  transform-origin: center;
+  transition:
+    opacity 180ms ease,
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
+.workButton:focus-visible {
+  outline: clamp(1px, 0.18vw, 3px) solid currentColor;
+  outline-offset: clamp(3px, 0.45vw, 8px);
+}
+
+.workButton:active {
+  transform: scale(0.965);
+}
+
+.artwork {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.artwork img {
+  object-fit: contain;
+}
+
+.overlay {
+  --overlay-safe-block: max(
+    env(safe-area-inset-top, 0px),
+    env(safe-area-inset-bottom, 0px)
+  );
+  --overlay-safe-inline: max(
+    env(safe-area-inset-left, 0px),
+    env(safe-area-inset-right, 0px)
+  );
+  --overlay-cz-clearance: calc(
+    clamp(1.25rem, 4vw, 4.5rem) +
+      clamp(2.027rem, 4.458vw, 3.648rem) + 0.5rem
+  );
+  --overlay-block-inset: max(
+    clamp(4rem, 9vw, 9rem),
+    var(--overlay-cz-clearance)
+  );
+  --overlay-inline-inset: clamp(5rem, 10.5vw, 10.5rem);
+  --overlay-block-end: calc(
+    var(--overlay-block-inset) + var(--overlay-safe-block)
+  );
+  --overlay-block-start: calc(
+    var(--overlay-block-inset) + var(--overlay-safe-block)
+  );
+  --overlay-inline-end: calc(
+    var(--overlay-inline-inset) + var(--overlay-safe-inline)
+  );
+  --overlay-inline-start: calc(
+    var(--overlay-inline-inset) + var(--overlay-safe-inline)
+  );
+  --overlay-panel-background: var(--area-section-background);
+
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: var(--area-section-background);
+}
+
+.overlay[data-visual-work-overlay="nineties-supply"] {
+  --overlay-panel-background: #e2ceb0;
+}
+
+.overlayFrame {
+  position: absolute;
+  inset:
+    var(--overlay-block-start) var(--overlay-inline-end)
+    var(--overlay-block-end) var(--overlay-inline-start);
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  border: clamp(1px, 0.18vw, 3px) solid currentColor;
+  background: var(--overlay-panel-background);
+}
+
+.overlayTitle {
+  max-width: min(80%, 60rem);
+  margin: 0;
+  padding: 2rem;
+  color: currentColor;
+  font-family: var(--font-brand), "Arial Black", Impact, sans-serif;
+  font-size: clamp(2.25rem, 6vw, 9rem);
+  font-weight: 900;
+  line-height: 0.9;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.visitLink {
+  position: absolute;
+  z-index: 4;
+  top: clamp(0.8rem, 1.2vw, 1.35rem);
+  left: 50%;
+  display: inline-flex;
+  max-width: min(62%, 34rem);
+  min-height: clamp(2.35rem, 3.25vw, 3.4rem);
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.45rem, 0.7vw, 0.75rem)
+    clamp(0.8rem, 1.25vw, 1.4rem);
+  border: 0;
+  background: transparent;
+  color: currentColor;
+  font-family: var(--font-brand), "Arial Black", Impact, sans-serif;
+  font-size: clamp(1rem, 1.45vw, 2rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.95;
+  text-align: center;
+  text-decoration: none;
+  text-wrap: balance;
+  transform: translateX(-50%);
+  transition: transform 160ms ease;
+}
+
+.visitLink:focus-visible {
+  outline: clamp(1px, 0.18vw, 3px) solid currentColor;
+  outline-offset: clamp(3px, 0.4vw, 7px);
+}
+
+.visitLink:active {
+  transform: translateX(-50%) scale(0.96);
+}
+
+.solarstaticPanel {
+  position: absolute;
+  z-index: 1;
+  inset: clamp(0.75rem, 1.4vw, 1.75rem);
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  background: var(--overlay-panel-background);
+  pointer-events: none;
+}
+
+.solarstaticAsset {
+  position: relative;
+  display: block;
+  width: min(72%, 44rem);
+  aspect-ratio: 1452.26 / 927.84;
+}
+
+.solarstaticAsset img {
+  object-fit: contain;
+}
+
+.closeButton {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--overlay-block-start) + clamp(0.4rem, 0.75vw, 0.75rem));
+  right: calc(var(--overlay-inline-end) + clamp(0.4rem, 0.75vw, 0.75rem));
+  display: grid;
+  width: clamp(1.25rem, 1.75vw, 1.75rem);
+  aspect-ratio: 1;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid currentColor;
+  appearance: none;
+  background: var(--overlay-panel-background);
+  color: currentColor;
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.closeButton::before {
+  position: absolute;
+  inset: -0.65rem;
+  content: "";
+}
+
+.closeButton:focus-visible {
+  outline: clamp(1px, 0.18vw, 3px) solid currentColor;
+  outline-offset: clamp(3px, 0.4vw, 7px);
+}
+
+.closeButton:active {
+  transform: scale(0.94);
+}
+
+.closeIcon {
+  position: relative;
+  display: block;
+  width: 48%;
+  height: 48%;
+}
+
+.closeIcon::before,
+.closeIcon::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: clamp(1px, 0.18vw, 3px);
+  background: currentColor;
+  content: "";
+}
+
+.closeIcon::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.closeIcon::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .workButton:hover {
+    transform: scale(1.035);
+  }
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .visualWorks {
+    --title-rail-width: max(
+      clamp(3rem, 12vw, 3.75rem),
+      calc(env(safe-area-inset-left) + 2.75rem)
+    );
+  }
+
+  .title {
+    left: calc(env(safe-area-inset-left, 0px) + 0.5rem);
+    font-size: clamp(1.85rem, 8.5vw, 2.5rem);
+  }
+
+  .galleryViewport {
+    inset-inline-start: var(--title-rail-width);
+    display: block;
+    padding:
+      max(1.5rem, calc(env(safe-area-inset-top) + 1rem))
+      max(3.75rem, calc(env(safe-area-inset-right) + 3rem))
+      max(8rem, calc(env(safe-area-inset-bottom) + 7rem)) 0.75rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .galleryViewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .artboard {
+    display: grid;
+    width: 100%;
+    aspect-ratio: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.5rem, 7vw, 2.75rem) clamp(0.9rem, 4vw, 1.5rem);
+    align-items: center;
+  }
+
+  .workButton {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    max-width: 13rem;
+    place-self: center;
+  }
+
+  .workButton:focus-visible {
+    outline-width: 2px;
+    outline-offset: 4px;
+  }
+
+  .overlay {
+    --overlay-block-inset: max(
+      clamp(3.75rem, 10vw, 5rem),
+      var(--overlay-cz-clearance)
+    );
+    --overlay-inline-inset: max(
+      4rem,
+      calc(var(--title-rail-width) + 1rem),
+      calc(
+        clamp(1.25rem, 4vw, 4.5rem) +
+          clamp(2.75rem, 5vw, 4.75rem) + 0.5rem
+      )
+    );
+  }
+
+  .overlayFrame {
+    border-width: 2px;
+  }
+
+  .overlayTitle {
+    padding: 1rem;
+    font-size: clamp(2rem, 11vw, 4.25rem);
+  }
+
+  .visitLink {
+    top: calc(0.75rem + 2.75rem + 0.65rem);
+    max-width: calc(100% - 1.5rem);
+    min-height: 2.35rem;
+    padding: 0.45rem 0.75rem;
+    font-size: clamp(0.9rem, 5vw, 1.35rem);
+  }
+
+  .solarstaticPanel {
+    inset: 0.5rem;
+  }
+
+  .solarstaticAsset {
+    width: min(76%, 18rem);
+  }
+
+  .closeButton {
+    top: calc(var(--overlay-block-start) + 0.4rem);
+    right: calc(var(--overlay-inline-end) + 0.4rem);
+    width: 1.35rem;
+    border-width: 1px;
+  }
+
+  .closeIcon::before,
+  .closeIcon::after {
+    height: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workButton,
+  .visitLink,
+  .closeButton {
+    transition: none;
+  }
+
+  .workButton:hover,
+  .workButton:active,
+  .visitLink:active,
+  .closeButton:active {
+    transform: none;
+  }
+
+  .visitLink {
+    transform: translateX(-50%);
+  }
+}

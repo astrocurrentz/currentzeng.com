@@ -24,3 +24,11 @@ body {
   font-family: var(--site-font-sans);
   margin: 0;
 }
+
+[data-section-scroll-root] {
+  scrollbar-width: none;
+}
+
+[data-section-scroll-root]::-webkit-scrollbar {
+  display: none;
+}

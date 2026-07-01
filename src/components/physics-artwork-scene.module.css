@@ -1,0 +1,87 @@
+.scene {
+  position: absolute;
+  z-index: 1;
+  inset: clamp(0.75rem, 1.4vw, 1.75rem);
+  overflow: hidden;
+  background: var(--overlay-panel-background, var(--area-section-background));
+  touch-action: none;
+}
+
+.physicsStage {
+  overflow: hidden;
+}
+
+.collisionIsland {
+  width: var(--scene-collision-island-width);
+  aspect-ratio: var(--scene-collision-island-aspect-ratio);
+  pointer-events: none;
+}
+
+.object {
+  width: var(--scene-object-width);
+  aspect-ratio: var(--scene-object-aspect-ratio);
+  transform-origin: center;
+  user-select: none;
+  will-change: transform;
+}
+
+.objectArtwork,
+.staticObject {
+  display: block;
+  width: var(--scene-object-width);
+  aspect-ratio: var(--scene-object-aspect-ratio);
+  user-select: none;
+}
+
+.objectArtwork {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+}
+
+.staticObject {
+  position: absolute;
+  top: var(--scene-object-top);
+  left: var(--scene-object-left);
+  transform: translate(-50%, -50%) rotate(var(--scene-object-angle));
+}
+
+.objectImage {
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.alphaCropArtwork {
+  position: absolute;
+  top: var(--artwork-canvas-top);
+  left: var(--artwork-canvas-left);
+  display: block;
+  width: var(--artwork-canvas-width);
+  height: var(--artwork-canvas-height);
+  pointer-events: none;
+  user-select: none;
+}
+
+.maskArtwork {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: var(--artwork-mask-color);
+  mask-image: var(--artwork-mask-image);
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: var(--artwork-mask-image);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .scene {
+    inset: 0.5rem;
+  }
+}

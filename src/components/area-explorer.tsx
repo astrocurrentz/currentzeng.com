@@ -16,6 +16,7 @@ import eyesLabel from "../../assets/lable-foreyes.png";
 import systemsLabel from "../../assets/lable-forsystems.png";
 import systemsArt from "../../assets/systems art.png";
 import { SectionScrollButton } from "@/components/section-scroll-button";
+import { VisualWorksGallery } from "@/components/visual-works-gallery";
 import { designTokens } from "@/config/design-tokens";
 import { cx } from "@/lib/class-names";
 import styles from "./area-explorer.module.css";
@@ -77,6 +78,7 @@ const areaEntries: readonly AreaEntry[] = [
 const pressReleaseMs = designTokens.components.areaSection.pressReleaseMs;
 const pressScrollDelayMs = designTokens.components.areaSection.pressScrollDelayMs;
 const traceReturnDelayMs = 580;
+const systemsReturnDelayMs = 580;
 
 function useReducedMotionRef() {
   const reducedMotionRef = useRef(false);
@@ -131,6 +133,8 @@ export function AreaExplorer() {
   const activePanelRef = useRef<PanelId>("home");
   const reducedMotionRef = useReducedMotionRef();
   const traceReturnTimeoutRef = useRef<number | null>(null);
+  const systemsReturnTimeoutRef = useRef<number | null>(null);
+  const systemsReturnInProgressRef = useRef(false);
   const [activePanel, setActivePanel] = useState<PanelId>("home");
   const [pressedArea, setPressedArea] = useState<AreaId | null>(null);
 
@@ -173,6 +177,10 @@ export function AreaExplorer() {
       if (traceReturnTimeoutRef.current !== null) {
         window.clearTimeout(traceReturnTimeoutRef.current);
       }
+
+      if (systemsReturnTimeoutRef.current !== null) {
+        window.clearTimeout(systemsReturnTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -196,6 +204,60 @@ export function AreaExplorer() {
     },
     [moveToPanel, reducedMotionRef],
   );
+
+  const returnToAreaHome = useCallback(
+    (behavior: ScrollBehavior) => {
+      if (systemsReturnTimeoutRef.current !== null) {
+        window.clearTimeout(systemsReturnTimeoutRef.current);
+        systemsReturnTimeoutRef.current = null;
+      }
+
+      scrollToPanel("home", behavior);
+
+      if (behavior === "smooth") {
+        systemsReturnInProgressRef.current = true;
+        systemsReturnTimeoutRef.current = window.setTimeout(() => {
+          systemsReturnInProgressRef.current = false;
+          systemsReturnTimeoutRef.current = null;
+        }, systemsReturnDelayMs);
+        return;
+      }
+
+      systemsReturnInProgressRef.current = false;
+    },
+    [scrollToPanel],
+  );
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+
+    if (!viewport) {
+      return;
+    }
+
+    const handleSystemsWheelReturn = (event: WheelEvent) => {
+      if (event.deltaY >= 0 || viewport.scrollTop <= 1) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (systemsReturnInProgressRef.current) {
+        return;
+      }
+
+      returnToAreaHome(reducedMotionRef.current ? "auto" : "smooth");
+    };
+
+    viewport.addEventListener("wheel", handleSystemsWheelReturn, {
+      passive: false,
+    });
+
+    return () => {
+      viewport.removeEventListener("wheel", handleSystemsWheelReturn);
+    };
+  }, [reducedMotionRef, returnToAreaHome]);
 
   const scrollPageToLanding = useCallback((behavior: ScrollBehavior) => {
     const scrollRoot = document.querySelector<HTMLElement>(
@@ -243,6 +305,10 @@ export function AreaExplorer() {
       >
         <div className={styles.world}>
           <div className={cx(styles.panel, styles.eyesPanel)}>
+            <VisualWorksGallery
+              isActive={activePanel === "eyes"}
+              key={activePanel === "eyes" ? "eyes-active" : "eyes-idle"}
+            />
             <ReturnButton
               arrowClassName={styles.arrowRight}
               className={styles.returnFromEyes}
@@ -316,8 +382,10 @@ export function AreaExplorer() {
             <ReturnButton
               arrowClassName={styles.arrowUp}
               className={styles.returnFromSystems}
-              label="Return from systems area"
-              onClick={() => moveToPanel("home")}
+              label="Return to area page"
+              onClick={() =>
+                returnToAreaHome(reducedMotionRef.current ? "auto" : "smooth")
+              }
             />
           </div>
         </div>

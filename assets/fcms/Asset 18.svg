@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1011.84 32.46">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #0a8241;
+      }
+
+      .cls-2 {
+        fill: #f499bd;
+      }
+
+      .cls-3 {
+        fill: #e51e26;
+      }
+
+      .cls-4 {
+        fill: #fadc17;
+      }
+
+      .cls-5 {
+        fill: #90caee;
+      }
+
+      .cls-6 {
+        fill: #2d54a5;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <g>
+      <rect class="cls-6" width="168.64" height="32.46"/>
+      <rect class="cls-5" x="168.64" width="168.64" height="32.46"/>
+      <rect class="cls-4" x="337.28" width="168.64" height="32.46"/>
+      <rect class="cls-3" x="505.92" width="168.64" height="32.46"/>
+      <rect class="cls-1" x="674.56" width="168.64" height="32.46"/>
+      <rect class="cls-2" x="843.2" width="168.64" height="32.46"/>
+    </g>
+  </g>
+</svg>

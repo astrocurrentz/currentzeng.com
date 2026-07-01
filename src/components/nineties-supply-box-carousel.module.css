@@ -1,0 +1,88 @@
+.layer {
+  position: absolute;
+  z-index: 2;
+  inset: clamp(0.75rem, 1.4vw, 1.75rem);
+  pointer-events: none;
+}
+
+.positioner {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  display: flex;
+  width: var(--nineties-supply-carousel-width);
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.65rem, 1vw, 0.9rem);
+  transform: translate(-50%, -50%);
+}
+
+.measure {
+  width: 100%;
+  aspect-ratio: 5 / 4;
+  pointer-events: auto;
+}
+
+.carousel:focus-visible {
+  outline: clamp(1px, 0.18vw, 3px) solid currentColor;
+  outline-offset: clamp(3px, 0.4vw, 7px);
+}
+
+.controls {
+  display: flex;
+  min-height: 1.75rem;
+  gap: clamp(0.5rem, 0.9vw, 0.8rem);
+  pointer-events: auto;
+}
+
+.control {
+  display: grid;
+  width: clamp(2.35rem, 3vw, 3rem);
+  height: clamp(1.55rem, 2vw, 2rem);
+  place-items: center;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  font-family: var(--site-font-sans), Arial, sans-serif;
+  font-size: clamp(0.9rem, 1.25vw, 1.2rem);
+  line-height: 1;
+  transition: transform 140ms ease;
+}
+
+.control:focus-visible {
+  outline: 0;
+  transform: scale(1.15);
+}
+
+.control:active {
+  transform: scale(0.92);
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .layer {
+    inset: 0.5rem;
+  }
+
+  .positioner {
+    top: 37%;
+    gap: 0.6rem;
+  }
+
+  .control {
+    width: 2.35rem;
+    height: 1.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control {
+    transition: none;
+  }
+
+  .control:active {
+    transform: none;
+  }
+}
