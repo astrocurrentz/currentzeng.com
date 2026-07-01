@@ -159,11 +159,16 @@ const d7Items: readonly PhysicsArtworkItem[] = [
   },
 ];
 
-export function D7GravityScene() {
+type D7GravitySceneProps = {
+  onSettled?: () => void;
+};
+
+export function D7GravityScene({ onSettled }: D7GravitySceneProps) {
   return (
     <PhysicsArtworkScene
       gravity={d7Gravity}
       items={d7Items}
+      onSettled={onSettled}
       sceneId="d7"
     />
   );

@@ -210,11 +210,18 @@ const fcmsItems: readonly PhysicsArtworkItem[] = [
   },
 ];
 
-export function FcmsGravityScene() {
+type FcmsGravitySceneProps = {
+  onSettled?: () => void;
+};
+
+export function FcmsGravityScene({
+  onSettled,
+}: FcmsGravitySceneProps) {
   return (
     <PhysicsArtworkScene
       gravity={fcmsGravity}
       items={fcmsItems}
+      onSettled={onSettled}
       sceneId="fcms"
     />
   );

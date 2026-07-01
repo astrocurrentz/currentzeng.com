@@ -172,11 +172,18 @@ const tattooWorksItems: readonly PhysicsArtworkItem[] = [
   },
 ];
 
-export function TattooWorksGravityScene() {
+type TattooWorksGravitySceneProps = {
+  onSettled?: () => void;
+};
+
+export function TattooWorksGravityScene({
+  onSettled,
+}: TattooWorksGravitySceneProps) {
   return (
     <PhysicsArtworkScene
       gravity={tattooWorksGravity}
       items={tattooWorksItems}
+      onSettled={onSettled}
       sceneId="tattoo-works"
     />
   );

@@ -293,11 +293,18 @@ const reindeerItems: readonly PhysicsArtworkItem[] = [
   },
 ];
 
-export function ReindeerGravityScene() {
+type ReindeerGravitySceneProps = {
+  onSettled?: () => void;
+};
+
+export function ReindeerGravityScene({
+  onSettled,
+}: ReindeerGravitySceneProps) {
   return (
     <PhysicsArtworkScene
       gravity={reindeerGravity}
       items={reindeerItems}
+      onSettled={onSettled}
       palette={reindeerPalette}
       sceneId="reindeer"
     />

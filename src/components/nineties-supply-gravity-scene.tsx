@@ -140,7 +140,9 @@ export function NinetiesSupplyGravityScene() {
         items={ninetiesSupplyItems}
         sceneId="nineties-supply"
       />
-      <NinetiesSupplyBoxCarousel />
+      <NinetiesSupplyBoxCarousel
+        attentionHintKey="nineties-supply-panel-load"
+      />
     </div>
   );
 }

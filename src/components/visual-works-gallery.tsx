@@ -19,6 +19,7 @@ import solarstatics from "../../assets/visual works/solarstatics.svg";
 import tattooWorks from "../../assets/visual works/tattoo works.svg";
 import tuna from "../../assets/visual works/tuna.svg";
 import solarstaticPanelAsset from "../../assets/solarstatics/Asset 1.svg";
+import { RandomLetterSwap } from "@/components/fancy/text/random-letter-swap";
 import styles from "./visual-works-gallery.module.css";
 
 const FcmsGravityScene = dynamic(
@@ -242,10 +243,12 @@ export function VisualWorksGallery({ isActive }: VisualWorksGalleryProps) {
   const activeTriggerRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const [selectedWork, setSelectedWork] = useState<VisualWork | null>(null);
+  const [isVisitLinkHovered, setIsVisitLinkHovered] = useState(false);
 
   const closeOverlay = useCallback(() => {
     const trigger = activeTriggerRef.current;
 
+    setIsVisitLinkHovered(false);
     setSelectedWork(null);
     window.requestAnimationFrame(() => trigger?.focus());
   }, []);
@@ -253,6 +256,7 @@ export function VisualWorksGallery({ isActive }: VisualWorksGalleryProps) {
   const openOverlay = useCallback(
     (work: VisualWork, event: MouseEvent<HTMLButtonElement>) => {
       activeTriggerRef.current = event.currentTarget;
+      setIsVisitLinkHovered(false);
       setSelectedWork(work);
     },
     [],
@@ -335,7 +339,9 @@ export function VisualWorksGallery({ isActive }: VisualWorksGalleryProps) {
               {selectedWork.title}
             </h3>
             {selectedWork.id === "fcms" ? <FcmsGravityScene /> : null}
-            {selectedWork.id === "reindeer" ? <ReindeerGravityScene /> : null}
+            {selectedWork.id === "reindeer" ? (
+              <ReindeerGravityScene />
+            ) : null}
             {selectedWork.id === "freewill" ? <FreewillPanel /> : null}
             {selectedWork.id === "d7" ? <D7GravityScene /> : null}
             {selectedWork.id === "nineties-supply" ? (
@@ -364,13 +370,21 @@ export function VisualWorksGallery({ isActive }: VisualWorksGalleryProps) {
             ) : null}
             {selectedWork.visitLink === undefined ? null : (
               <a
+                aria-label={`Visit ${selectedWork.visitLink.brand}`}
                 className={styles.visitLink}
                 data-visual-work-visit-link=""
                 href={selectedWork.visitLink.href}
+                onPointerEnter={() => setIsVisitLinkHovered(true)}
+                onPointerLeave={() => setIsVisitLinkHovered(false)}
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                Visit {selectedWork.visitLink.brand}
+                <RandomLetterSwap
+                  isHovered={isVisitLinkHovered}
+                  key={selectedWork.id}
+                  label={`Visit ${selectedWork.visitLink.brand}`}
+                  playKey={selectedWork.id}
+                />
               </a>
             )}
           </div>

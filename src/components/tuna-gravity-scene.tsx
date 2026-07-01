@@ -82,11 +82,18 @@ const tunaItems: readonly PhysicsArtworkItem[] = [
   },
 ];
 
-export function TunaGravityScene() {
+type TunaGravitySceneProps = {
+  onSettled?: () => void;
+};
+
+export function TunaGravityScene({
+  onSettled,
+}: TunaGravitySceneProps) {
   return (
     <PhysicsArtworkScene
       gravity={tunaGravity}
       items={tunaItems}
+      onSettled={onSettled}
       sceneId="tuna"
     />
   );

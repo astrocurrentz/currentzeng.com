@@ -27,7 +27,13 @@ type CarouselSize = {
   height: number;
 };
 
-export function NinetiesSupplyBoxCarousel() {
+type NinetiesSupplyBoxCarouselProps = {
+  attentionHintKey?: string | number;
+};
+
+export function NinetiesSupplyBoxCarousel({
+  attentionHintKey,
+}: NinetiesSupplyBoxCarouselProps) {
   const carouselRef = useRef<BoxCarouselRef>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<CarouselSize | null>(null);
@@ -77,6 +83,7 @@ export function NinetiesSupplyBoxCarousel() {
         >
           {size === null || size.width === 0 ? null : (
             <BoxCarousel
+              attentionHintKey={attentionHintKey}
               className={styles.carousel}
               height={size.height}
               items={carouselItems}

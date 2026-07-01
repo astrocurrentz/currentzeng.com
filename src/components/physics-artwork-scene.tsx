@@ -79,6 +79,7 @@ type PhysicsArtworkSceneProps = {
   gravity: { x: number; y: number };
   bodyOptions?: Matter.IBodyDefinition;
   collisionIslands?: readonly PhysicsArtworkCollisionIsland[];
+  onSettled?: () => void;
   palette?: readonly string[];
 };
 
@@ -292,6 +293,7 @@ export function PhysicsArtworkScene({
   collisionIslands = noCollisionIslands,
   gravity,
   items,
+  onSettled,
   palette,
   sceneId,
 }: PhysicsArtworkSceneProps) {
@@ -370,6 +372,7 @@ export function PhysicsArtworkScene({
         className={styles.physicsStage}
         gravity={gravity}
         key={isPortraitPhone ? "phone" : "desktop"}
+        onSettled={onSettled}
       >
         {activeCollisionIslands.map((island) => {
           const placement =

@@ -30,6 +30,12 @@ import {
   useState,
 } from "react";
 import { cx } from "@/lib/class-names";
+import {
+  getDragRotationStep,
+  getNextRotationStep,
+  runCarouselAttentionHint,
+  type RotationDirection,
+} from "./box-carousel-rotation";
 import styles from "./box-carousel.module.css";
 
 export type CarouselItem = {
@@ -118,7 +124,7 @@ export type BoxCarouselRef = {
   getCurrentItemIndex: () => number;
 };
 
-export type RotationDirection = "top" | "bottom" | "left" | "right";
+export type { RotationDirection } from "./box-carousel-rotation";
 
 export type SpringConfig = {
   stiffness?: number;
@@ -130,6 +136,7 @@ type BoxCarouselProps = HTMLProps<HTMLDivElement> & {
   items: CarouselItem[];
   width: number;
   height: number;
+  attentionHintKey?: string | number;
   debug?: boolean;
   perspective?: number;
   direction?: RotationDirection;
@@ -158,17 +165,10 @@ const defaultDragSpring: SpringConfig = {
 };
 const instantTransition: ValueAnimationTransition<number> = { duration: 0 };
 
-function getNextRotationStep(direction: RotationDirection) {
-  return direction === "top" || direction === "right" ? 1 : -1;
-}
-
-function getDragRotationStep(direction: RotationDirection) {
-  return direction === "top" || direction === "right" ? -1 : 1;
-}
-
 const BoxCarousel = forwardRef<BoxCarouselRef, BoxCarouselProps>(
   function BoxCarousel(
     {
+      attentionHintKey,
       autoPlay = false,
       autoPlayInterval = 3000,
       className,
@@ -200,6 +200,8 @@ const BoxCarousel = forwardRef<BoxCarouselRef, BoxCarouselProps>(
     const rotationCount = useRef(1);
     const isRotating = useRef(false);
     const pendingIndexChange = useRef<number | null>(null);
+    const hasUserInteracted = useRef(false);
+    const lastAttentionHintKey = useRef<typeof attentionHintKey>(undefined);
     const isDragging = useRef(false);
     const startPosition = useRef({ x: 0, y: 0 });
     const startRotation = useRef(0);
@@ -277,6 +279,7 @@ const BoxCarousel = forwardRef<BoxCarouselRef, BoxCarouselProps>(
           return;
         }
 
+        hasUserInteracted.current = true;
         isDragging.current = true;
         startPosition.current = {
           x: point.clientX,
@@ -406,6 +409,7 @@ const BoxCarousel = forwardRef<BoxCarouselRef, BoxCarouselProps>(
         return;
       }
 
+      hasUserInteracted.current = true;
       isRotating.current = true;
       pendingIndexChange.current =
         (currentItemIndex + 1) % items.length;
@@ -435,6 +439,7 @@ const BoxCarousel = forwardRef<BoxCarouselRef, BoxCarouselProps>(
         return;
       }
 
+      hasUserInteracted.current = true;
       isRotating.current = true;
       pendingIndexChange.current =
         (currentItemIndex - 1 + items.length) % items.length;
@@ -476,6 +481,38 @@ const BoxCarousel = forwardRef<BoxCarouselRef, BoxCarouselProps>(
           : width,
       [direction, height, width],
     );
+
+    useEffect(() => {
+      if (
+        attentionHintKey === undefined ||
+        attentionHintKey === lastAttentionHintKey.current
+      ) {
+        return;
+      }
+
+      lastAttentionHintKey.current = attentionHintKey;
+
+      if (prefersReducedMotion || hasUserInteracted.current) {
+        return;
+      }
+
+      const isVertical = direction === "top" || direction === "bottom";
+      const targetMotionValue = isVertical ? baseRotateX : baseRotateY;
+
+      return runCarouselAttentionHint({
+        currentRotation,
+        direction,
+        targetMotionValue,
+      });
+    }, [
+      attentionHintKey,
+      baseRotateX,
+      baseRotateY,
+      currentRotation,
+      direction,
+      prefersReducedMotion,
+    ]);
+
     const transform = useTransform(
       isDragging.current
         ? [springRotateX, springRotateY]

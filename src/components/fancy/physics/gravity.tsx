@@ -62,6 +62,7 @@ export type GravityProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
   grabCursor?: boolean;
   addTopWall?: boolean;
   autoStart?: boolean;
+  onSettled?: () => void;
 };
 
 export type GravityRef = {
@@ -72,15 +73,26 @@ export type GravityRef = {
 
 type RegisteredElement = {
   element: HTMLElement;
-  props: MatterBodyProps;
+  props: RegisteredMatterBodyProps;
   body: Matter.Body | null;
 };
+
+type RegisteredMatterBodyProps = Pick<
+  MatterBodyProps,
+  | "angle"
+  | "bodyType"
+  | "collisionTargetSelector"
+  | "matterBodyOptions"
+  | "sampleLength"
+  | "x"
+  | "y"
+>;
 
 type GravityContextValue = {
   registerElement: (
     id: string,
     element: HTMLElement,
-    props: MatterBodyProps,
+    props: RegisteredMatterBodyProps,
   ) => void;
   unregisterElement: (id: string) => void;
 };
@@ -91,6 +103,11 @@ const defaultBodyOptions: MatterBodyOptions = {
   isStatic: false,
   restitution: 0.1,
 };
+const settledMinimumDelayMs = 900;
+const settledMaximumDelayMs = 2200;
+const settledFrameTarget = 20;
+const settledSpeedThreshold = 0.24;
+const settledAngularSpeedThreshold = 0.018;
 
 const GravityContext = createContext<GravityContextValue | null>(null);
 
@@ -121,13 +138,9 @@ export function MatterBody({
     context.registerElement(id, element, {
       angle,
       bodyType,
-      children,
-      className,
       collisionTargetSelector,
-      isDraggable,
       matterBodyOptions,
       sampleLength,
-      style,
       x,
       y,
     });
@@ -136,15 +149,11 @@ export function MatterBody({
   }, [
     angle,
     bodyType,
-    className,
     collisionTargetSelector,
-    children,
     context,
     id,
-    isDraggable,
     matterBodyOptions,
     sampleLength,
-    style,
     x,
     y,
   ]);
@@ -182,6 +191,7 @@ const Gravity = forwardRef<GravityRef, GravityProps>(function Gravity(
     resetOnResize = true,
     addTopWall = true,
     autoStart = true,
+    onSettled,
     className,
     style,
     ...props
@@ -196,6 +206,7 @@ const Gravity = forwardRef<GravityRef, GravityProps>(function Gravity(
   const frameIdRef = useRef<number | null>(null);
   const isRunningRef = useRef(false);
   const elementsRef = useRef(new Map<string, RegisteredElement>());
+  const onSettledRef = useRef(onSettled);
   const gravityX = gravity.x;
   const gravityY = gravity.y;
 
@@ -362,7 +373,7 @@ const Gravity = forwardRef<GravityRef, GravityProps>(function Gravity(
     (
       id: string,
       element: HTMLElement,
-      matterBodyProps: MatterBodyProps,
+      matterBodyProps: RegisteredMatterBodyProps,
     ) => {
       const existing = elementsRef.current.get(id);
       const engine = engineRef.current;
@@ -472,6 +483,56 @@ const Gravity = forwardRef<GravityRef, GravityProps>(function Gravity(
 
     World.add(engine.world, [mouseConstraint, ...walls]);
 
+    const settleStartTime = window.performance.now();
+    let settledFrames = 0;
+    let hasReportedSettled = false;
+    const reportSettled = () => {
+      if (hasReportedSettled) {
+        return;
+      }
+
+      hasReportedSettled = true;
+      onSettledRef.current?.();
+    };
+
+    Events.on(engine, "beforeUpdate", () => {
+      if (hasReportedSettled || onSettledRef.current === undefined) {
+        return;
+      }
+
+      const elapsedTime = window.performance.now() - settleStartTime;
+
+      if (elapsedTime >= settledMaximumDelayMs) {
+        reportSettled();
+        return;
+      }
+
+      if (elapsedTime < settledMinimumDelayMs) {
+        return;
+      }
+
+      const dynamicBodies = engine.world.bodies.filter(
+        (body) => !body.isStatic,
+      );
+
+      if (dynamicBodies.length === 0) {
+        reportSettled();
+        return;
+      }
+
+      const isSettled = dynamicBodies.every(
+        (body) =>
+          body.speed <= settledSpeedThreshold &&
+          Math.abs(body.angularSpeed) <= settledAngularSpeedThreshold,
+      );
+
+      settledFrames = isSettled ? settledFrames + 1 : 0;
+
+      if (settledFrames >= settledFrameTarget) {
+        reportSettled();
+      }
+    });
+
     if (grabCursor) {
       Events.on(engine, "beforeUpdate", () => {
         const hoveredBody = Query.point(
@@ -508,6 +569,10 @@ const Gravity = forwardRef<GravityRef, GravityProps>(function Gravity(
     startEngine,
     syncElementPositions,
   ]);
+
+  useLayoutEffect(() => {
+    onSettledRef.current = onSettled;
+  }, [onSettled]);
 
   const contextValue = useMemo(
     () => ({ registerElement, unregisterElement }),
