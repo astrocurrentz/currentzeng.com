@@ -141,20 +141,8 @@
   width: 4.95%;
 }
 
-.title {
-  position: absolute;
-  bottom: max(0.75rem, 1.4%);
-  left: 50%;
-  margin: 0;
-  color: currentColor;
-  font-family: var(--font-brand), "Arial Black", Impact, sans-serif;
-  font-size: clamp(2.75rem, 4.15vw, 10.4rem);
-  font-weight: 900;
-  letter-spacing: 0;
-  line-height: 0.78;
-  text-align: center;
-  transform: translateX(-50%);
-  white-space: nowrap;
+.systemsShowcase .continueButton {
+  z-index: 3;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -215,7 +203,7 @@
       "phone laptop"
       "bazi-copy re-copy"
       "bazi-icon re-crest"
-      "title title";
+      "continue continue";
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: clamp(0.8rem, 4vw, 1.4rem);
     row-gap: clamp(0.9rem, 4vw, 1.4rem);
@@ -224,8 +212,7 @@
 
   .deviceAction,
   .markButton,
-  .projectCopy,
-  .title {
+  .projectCopy {
     position: relative;
     top: auto;
     left: auto;
@@ -269,11 +256,16 @@
     width: min(16vw, 4rem);
   }
 
-  .title {
-    grid-area: title;
-    padding-block-start: clamp(0.75rem, 3vw, 1.25rem);
-    font-size: clamp(3.25rem, 17vw, 4.75rem);
+  .systemsShowcase .continueButton {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    grid-area: continue;
     transform: none;
+  }
+
+  .systemsShowcase .continueButton:active {
+    transform: scale(0.92) rotate(8deg);
   }
 }
 
@@ -291,7 +283,8 @@
   .markButton:hover,
   .markButton:focus-visible,
   .markButton:active,
-  .markButton.isPressed {
+  .markButton.isPressed,
+  .systemsShowcase .continueButton:active {
     transform: none;
   }
 }

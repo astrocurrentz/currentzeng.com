@@ -37,6 +37,11 @@ export const designTokens = {
     resumeSection: {
       minBlockSize: "100svh",
     },
+    portfolioFooter: {
+      blockSize: "clamp(20rem, 48svh, 36rem)",
+      wordmarkFontSize: "clamp(8rem, 24vw, 24rem)",
+      wordmarkTranslateY: "0%",
+    },
     introRoles: {
       columnGap: "clamp(1rem, 4vw, 10rem)",
       fontSize: "clamp(1.375rem, 5.1vw, 12.75rem)",

@@ -1,0 +1,97 @@
+.footer {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  isolation: isolate;
+  width: 100%;
+  height: var(--portfolio-footer-block-size);
+  overflow: hidden;
+  background: var(--portfolio-footer-background);
+  color: var(--portfolio-footer-foreground);
+}
+
+.wordmark {
+  position: absolute;
+  bottom: 0;
+  left: max(1rem, calc(env(safe-area-inset-left) + 1rem));
+  z-index: 0;
+  margin: 0;
+  color: currentColor;
+  font-family: var(--font-brand);
+  font-size: var(--portfolio-footer-wordmark-size);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.78;
+  pointer-events: none;
+  transform: translateY(var(--portfolio-footer-wordmark-translate-y));
+  user-select: none;
+  white-space: nowrap;
+}
+
+.navigation {
+  position: absolute;
+  top: max(1.5rem, calc(env(safe-area-inset-top) + 1.5rem));
+  right: max(1.25rem, calc(env(safe-area-inset-right) + 1.25rem));
+  z-index: 1;
+}
+
+.linkList {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: clamp(0.35rem, 0.8svh, 0.75rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contactControl {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  font-family: var(--site-font-sans);
+  font-size: clamp(1.25rem, 2.4vw, 2.25rem);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+  text-align: right;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.contactControl:focus-visible {
+  border-radius: 0.05em;
+  outline: 2px solid currentColor;
+  outline-offset: 0.22em;
+}
+
+.phoneControl {
+  min-width: 7.5rem;
+}
+
+@media (max-width: 767px) {
+  .navigation {
+    top: max(1.25rem, calc(env(safe-area-inset-top) + 1.25rem));
+    right: max(1rem, calc(env(safe-area-inset-right) + 1rem));
+  }
+
+  .contactControl {
+    font-size: clamp(1.2rem, 6vw, 1.75rem);
+  }
+
+  .wordmark {
+    left: max(0.75rem, calc(env(safe-area-inset-left) + 0.75rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contactControl {
+    scroll-behavior: auto;
+  }
+}

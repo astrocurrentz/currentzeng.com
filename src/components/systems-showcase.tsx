@@ -8,6 +8,7 @@ import reCrest from "../../assets/codes/re crest.svg";
 import reLaptop from "../../assets/codes/re laptop.png";
 import { designTokens } from "@/config/design-tokens";
 import { BaziOverlayPage } from "@/components/selected-works/BaziOverlayPage";
+import { SectionScrollButton } from "@/components/section-scroll-button";
 import { cx } from "@/lib/class-names";
 import styles from "./systems-showcase.module.css";
 
@@ -162,7 +163,7 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
   return (
     <section
       aria-hidden={isActive ? undefined : true}
-      aria-labelledby="systems-codes-title"
+      aria-label="Code projects"
       className={cx(
         styles.systemsShowcase,
         isBaziOverlayOpen && styles.hasOverlay,
@@ -222,9 +223,9 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
         </p>
 
         <p className={cx(styles.projectCopy, styles.reCopy)}>
-          <span className={styles.projectKicker}>education institute</span>
+          <span className={styles.projectKicker}>Education Institute</span>
           <span className={styles.projectName}>
-            branding &amp; official website
+            Branding &amp; Official Website
           </span>
         </p>
 
@@ -271,9 +272,15 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
           </span>
         </a>
 
-        <h2 className={styles.title} id="systems-codes-title">
-          codes
-        </h2>
+        {!isBaziOverlayOpen ? (
+          <SectionScrollButton
+            ariaLabel="Continue to Résumé"
+            className={styles.continueButton}
+            direction="down"
+            placement="bottom"
+            targetSection="resume-intro"
+          />
+        ) : null}
       </div>
 
       {isBaziOverlayOpen ? (

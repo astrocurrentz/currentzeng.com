@@ -12,6 +12,7 @@ export type SectionId =
 
 type SectionScrollButtonProps = {
   ariaLabel: string;
+  className?: string;
   direction: "up" | "down";
   placement: "top" | "bottom";
   targetSection: SectionId;
@@ -19,6 +20,7 @@ type SectionScrollButtonProps = {
 
 export function SectionScrollButton({
   ariaLabel,
+  className,
   direction,
   placement,
   targetSection,
@@ -52,6 +54,7 @@ export function SectionScrollButton({
         styles.button,
         styles[direction],
         styles[placement],
+        className,
       )}
       onClick={handleClick}
       type="button"
