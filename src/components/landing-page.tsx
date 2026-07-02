@@ -1,6 +1,8 @@
 import { AreaSection } from "@/components/area-section";
 import { BrandWordmark } from "@/components/brand-wordmark";
 import { LandingStage } from "@/components/landing-stage";
+import { ResumeIntroSection } from "@/components/resume-intro-section";
+import { ResumeSection } from "@/components/resume-section";
 import { SectionScrollButton } from "@/components/section-scroll-button";
 import { SecondSection } from "@/components/second-section";
 
@@ -21,6 +23,8 @@ export function LandingPage() {
       </LandingStage>
       <SecondSection />
       <AreaSection />
+      <ResumeIntroSection />
+      <ResumeSection />
     </main>
   );
 }

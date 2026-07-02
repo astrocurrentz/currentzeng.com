@@ -3,7 +3,12 @@
 import { cx } from "@/lib/class-names";
 import styles from "./section-scroll-button.module.css";
 
-export type SectionId = "landing" | "intro" | "area";
+export type SectionId =
+  | "landing"
+  | "intro"
+  | "area"
+  | "resume-intro"
+  | "resume";
 
 type SectionScrollButtonProps = {
   ariaLabel: string;

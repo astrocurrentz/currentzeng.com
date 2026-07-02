@@ -2,6 +2,7 @@ export const designTokens = {
   colors: {
     brandRed: "#6C0A00",
     brandWhite: "#FFFFFF",
+    resumePaper: "#fffbf8",
   },
   fonts: {
     sans:
@@ -29,6 +30,12 @@ export const designTokens = {
       minBlockSize: "100svh",
       pressReleaseMs: 280,
       pressScrollDelayMs: 120,
+    },
+    resumeIntroSection: {
+      minBlockSize: "100svh",
+    },
+    resumeSection: {
+      minBlockSize: "100svh",
     },
     introRoles: {
       columnGap: "clamp(1rem, 4vw, 10rem)",

@@ -1,0 +1,30 @@
+.root {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  white-space: nowrap;
+}
+
+.sizingGuard,
+.text {
+  grid-area: 1 / 1;
+  display: block;
+}
+
+.sizingGuard {
+  visibility: hidden;
+}
+
+.text {
+  transition:
+    font-variation-settings 80ms linear,
+    font-weight 80ms linear;
+  will-change: font-variation-settings, font-weight;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text {
+    transition: none;
+    will-change: auto;
+  }
+}

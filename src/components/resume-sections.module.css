@@ -1,0 +1,220 @@
+.resumeIntroSection,
+.resumeSection {
+  position: relative;
+  isolation: isolate;
+  min-height: var(--resume-section-min-block);
+  background: var(--resume-section-background);
+  color: var(--resume-section-foreground);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.resumeIntroSection {
+  overflow: hidden;
+}
+
+.resumeIntroTracking {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  padding:
+    max(1.25rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right))
+    max(5.5rem, calc(env(safe-area-inset-bottom) + 4.75rem))
+    max(1rem, env(safe-area-inset-left));
+}
+
+.resumeIntroTitle {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: currentColor;
+  font-size: clamp(4.5rem, 16vw, 19rem);
+  font-weight: 620;
+  letter-spacing: 0;
+  line-height: 0.82;
+  text-align: center;
+}
+
+.resumeCursor {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  color: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.resumeIntroTracking[data-cursor-active="true"] .resumeCursor {
+  opacity: 1;
+}
+
+.resumeCursorGuide,
+.resumeCursorSquare {
+  position: absolute;
+  display: block;
+}
+
+.resumeCursorGuide {
+  background: currentColor;
+  opacity: 0.3;
+}
+
+.resumeCursorVertical {
+  top: 0;
+  bottom: 0;
+  left: var(--resume-cursor-x);
+  width: 1px;
+  transform: translateX(-0.5px);
+  transition: left 80ms linear;
+}
+
+.resumeCursorHorizontal {
+  top: var(--resume-cursor-y);
+  right: 0;
+  left: 0;
+  height: 1px;
+  transform: translateY(-0.5px);
+  transition: top 80ms linear;
+}
+
+.resumeCursorSquare {
+  top: var(--resume-cursor-y);
+  left: var(--resume-cursor-x);
+  width: clamp(0.6rem, 1vw, 0.85rem);
+  aspect-ratio: 1;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+  transition:
+    top 80ms linear,
+    left 80ms linear;
+}
+
+.resumeSection {
+  display: flex;
+  min-height: max(var(--resume-section-min-block), 100svh);
+  align-items: flex-start;
+  justify-content: center;
+  overflow: visible;
+  padding:
+    max(2rem, calc(env(safe-area-inset-top) + 2rem))
+    max(1rem, calc(env(safe-area-inset-right) + 1rem))
+    max(2rem, calc(env(safe-area-inset-bottom) + 2rem))
+    max(1rem, calc(env(safe-area-inset-left) + 1rem));
+}
+
+.resumeFrame {
+  position: relative;
+  width: min(92vw, 54rem);
+  aspect-ratio: 612 / 1465.95;
+  overflow: hidden;
+}
+
+.resumeFrame::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      var(--resume-section-background),
+      var(--resume-section-background)
+    )
+      top / 100% 8px no-repeat,
+    linear-gradient(
+      var(--resume-section-background),
+      var(--resume-section-background)
+    )
+      right / 8px 100% no-repeat,
+    linear-gradient(
+      var(--resume-section-background),
+      var(--resume-section-background)
+    )
+      bottom / 100% 32px no-repeat,
+    linear-gradient(
+      var(--resume-section-background),
+      var(--resume-section-background)
+    )
+      left / 8px 100% no-repeat;
+  content: "";
+  pointer-events: none;
+}
+
+.resumeObject {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.resumeProjectLink {
+  position: absolute;
+  z-index: 2;
+  display: block;
+  color: var(--resume-section-foreground);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.resumeProjectLink:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+  background: rgb(108 10 0 / 0.08);
+}
+
+.resumeFallback {
+  display: grid;
+  min-height: 100%;
+  margin: 0;
+  place-items: center;
+  padding: 2rem;
+  color: var(--resume-section-foreground);
+  font-family: var(--site-font-sans);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.resumeFallback a {
+  color: currentColor;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .resumeIntroTracking[data-cursor-enabled="true"] {
+    cursor: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .resumeIntroTitle {
+    font-size: clamp(4.25rem, 22vw, 7.75rem);
+  }
+
+  .resumeSection {
+    padding:
+      max(1rem, calc(env(safe-area-inset-top) + 1rem))
+      max(0.75rem, calc(env(safe-area-inset-right) + 0.75rem))
+      max(1rem, calc(env(safe-area-inset-bottom) + 1rem))
+      max(0.75rem, calc(env(safe-area-inset-left) + 0.75rem));
+  }
+
+  .resumeFrame {
+    width: min(96vw, 30rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resumeCursor {
+    display: none;
+  }
+}
