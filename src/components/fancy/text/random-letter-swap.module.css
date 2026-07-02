@@ -1,8 +1,22 @@
 .root {
   display: inline-flex;
   flex-wrap: wrap;
+  align-items: center;
+  align-content: center;
   justify-content: center;
-  white-space: pre-wrap;
+  white-space: normal;
+}
+
+.word {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.space {
+  display: inline-block;
+  flex: none;
+  white-space: pre;
 }
 
 .glyph {
@@ -57,4 +71,3 @@
     transform: translateY(0);
   }
 }
-

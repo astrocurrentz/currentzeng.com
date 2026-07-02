@@ -1,4 +1,11 @@
 @import "tailwindcss";
+@import "../components/selected-works/bazi/bazi-shell.css";
+@import "../components/selected-works/bazi/bazi-input.css";
+@import "../components/selected-works/bazi/bazi-output.css";
+@import "../components/selected-works/bazi/bazi-tablet.css";
+@import "../components/selected-works/bazi/bazi-desktop.css";
+@import "../components/selected-works/bazi/bazi-mobile.css";
+@import "../components/selected-works/bazi/bazi-overrides.css";
 
 :root {
   color-scheme: light;

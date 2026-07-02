@@ -27,12 +27,20 @@ type GlyphStyle = CSSProperties & {
   "--random-letter-swap-delay": string;
 };
 
+type GlyphToken = {
+  animationIndex: number;
+  character: string;
+  key: string;
+};
+
+type WordToken = {
+  glyphs: GlyphToken[];
+  key: string;
+  trailingSpace: string;
+};
+
 const loadAnimationMs = 820;
 const staggerDurationMs = 35;
-
-function getCharacters(label: string) {
-  return Array.from(label);
-}
 
 function getRandomOrder(length: number) {
   const order = Array.from({ length }, (_, index) => index);
@@ -45,8 +53,46 @@ function getRandomOrder(length: number) {
   return order;
 }
 
-function getDisplayCharacter(character: string) {
-  return character === " " ? "\u00a0" : character;
+function getWordTokens(label: string) {
+  const matches = label.match(/\S+\s*/gu) ?? [];
+  let animationIndex = 0;
+
+  return matches.map((match, matchIndex): WordToken => {
+    const trailingSpaceMatch = match.match(/\s+$/u);
+    const trailingSpace = trailingSpaceMatch?.[0] ?? "";
+    const word =
+      trailingSpace.length === 0
+        ? match
+        : match.slice(0, -trailingSpace.length);
+    const glyphs = Array.from(word).map((character, characterIndex) => {
+      const token: GlyphToken = {
+        animationIndex,
+        character,
+        key: `${matchIndex}-${character}-${characterIndex}`,
+      };
+
+      animationIndex += 1;
+
+      return token;
+    });
+
+    return {
+      glyphs,
+      key: `${matchIndex}-${word}`,
+      trailingSpace,
+    };
+  });
+}
+
+function getAnimatedCharacterCount(wordTokens: WordToken[]) {
+  return wordTokens.reduce(
+    (count, token) => count + token.glyphs.length,
+    0,
+  );
+}
+
+function getDisplaySpace(space: string) {
+  return "\u00a0".repeat(Array.from(space).length);
 }
 
 export function RandomLetterSwap({
@@ -56,17 +102,21 @@ export function RandomLetterSwap({
   playKey,
 }: RandomLetterSwapProps) {
   const prefersReducedMotion = useReducedMotion();
-  const characters = useMemo(() => getCharacters(label), [label]);
+  const wordTokens = useMemo(() => getWordTokens(label), [label]);
+  const animatedCharacterCount = useMemo(
+    () => getAnimatedCharacterCount(wordTokens),
+    [wordTokens],
+  );
   const [randomOrder, setRandomOrder] = useState(() =>
-    getRandomOrder(characters.length),
+    getRandomOrder(animatedCharacterCount),
   );
   const [isHovered, setIsHovered] = useState(false);
   const [isLoadAnimating, setIsLoadAnimating] = useState(false);
   const [loadRunKey, setLoadRunKey] = useState(0);
 
   const refreshRandomOrder = useCallback(() => {
-    setRandomOrder(getRandomOrder(characters.length));
-  }, [characters.length]);
+    setRandomOrder(getRandomOrder(animatedCharacterCount));
+  }, [animatedCharacterCount]);
 
   useEffect(() => {
     if (playKey === undefined || prefersReducedMotion) {
@@ -80,7 +130,7 @@ export function RandomLetterSwap({
       setLoadRunKey((currentKey) => currentKey + 1);
 
       const longestDelay =
-        Math.max(0, characters.length - 1) * staggerDurationMs;
+        Math.max(0, animatedCharacterCount - 1) * staggerDurationMs;
       timeoutId = window.setTimeout(
         () => setIsLoadAnimating(false),
         loadAnimationMs + longestDelay,
@@ -95,7 +145,7 @@ export function RandomLetterSwap({
       }
     };
   }, [
-    characters.length,
+    animatedCharacterCount,
     playKey,
     prefersReducedMotion,
     refreshRandomOrder,
@@ -143,35 +193,46 @@ export function RandomLetterSwap({
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
     >
-      {characters.map((character, index) => {
-        const displayCharacter = getDisplayCharacter(character);
-        const style: GlyphStyle = {
-          "--random-letter-swap-delay": `${
-            (randomOrder[index] ?? index) * staggerDurationMs
-          }ms`,
-        };
+      {wordTokens.map((wordToken) => (
+        <span className={styles.word} key={wordToken.key}>
+          {wordToken.glyphs.map((glyph) => {
+            const style: GlyphStyle = {
+              "--random-letter-swap-delay": `${
+                (randomOrder[glyph.animationIndex] ??
+                  glyph.animationIndex) * staggerDurationMs
+              }ms`,
+            };
 
-        return (
-          <span
-            className={styles.glyph}
-            key={`${character}-${index}`}
-            style={style}
-          >
-            <span
-              className={styles.stack}
-              key={`${loadRunKey}-${index}`}
-            >
-              <span className={styles.copy}>{displayCharacter}</span>
+            return (
               <span
-                aria-hidden="true"
-                className={cx(styles.copy, styles.copySecondary)}
+                className={styles.glyph}
+                key={glyph.key}
+                style={style}
               >
-                {displayCharacter}
+                <span
+                  className={styles.stack}
+                  key={`${loadRunKey}-${glyph.animationIndex}`}
+                >
+                  <span className={styles.copy}>
+                    {glyph.character}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={cx(styles.copy, styles.copySecondary)}
+                  >
+                    {glyph.character}
+                  </span>
+                </span>
               </span>
+            );
+          })}
+          {wordToken.trailingSpace.length === 0 ? null : (
+            <span aria-hidden="true" className={styles.space}>
+              {getDisplaySpace(wordToken.trailingSpace)}
             </span>
-          </span>
-        );
-      })}
+          )}
+        </span>
+      ))}
     </span>
   );
 }

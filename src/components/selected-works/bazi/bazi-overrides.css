@@ -1,0 +1,246 @@
+:root {
+  --accent-secondary: #fcaa06;
+  --bazi-background-light: #eeeeee;
+  --bazi-foreground-light: #0a0a0a;
+  --bazi-muted-foreground-light: rgba(0, 0, 0, 0.56);
+  --bazi-border-light: #000000;
+  --bazi-main-light: #000000;
+  --bazi-main-foreground-light: #ffffff;
+  --bazi-background-dark: #6c0a00;
+  --bazi-foreground-dark: #ececec;
+  --bazi-muted-foreground-dark: rgba(236, 236, 236, 0.62);
+  --bazi-element-water: #3078ce;
+  --bazi-element-earth: #a3692f;
+  --bazi-element-fire: #c94b4b;
+  --bazi-element-metal: #fcaa06;
+  --bazi-element-wood: #44995e;
+  --bazi-grid-light-line: rgba(0, 0, 0, 0.16);
+  --bazi-grid-dark-line: rgba(255, 255, 255, 0.1);
+  --bazi-modal-scrim: rgba(0, 0, 0, 0.48);
+  --font-body: var(--site-font-mono);
+  --font-display: var(--site-font-sans);
+  --glitch-cool: #31a8c4;
+  --glitch-warm: #d85b5b;
+}
+
+.bazi-demo.bazi-overlay-page {
+  --bazi-background: var(--area-section-background, var(--site-background));
+  --bazi-secondary-background: #d9d9d9;
+  --bazi-foreground: #0a0a0a;
+  --bazi-muted-foreground: rgba(0, 0, 0, 0.6);
+  --bazi-border: #000000;
+  --bazi-main: #000000;
+  --bazi-main-foreground: #ffffff;
+  background: var(--bazi-background);
+}
+
+.bazi-overlay-page .bazi-demo-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+}
+
+.bazi-overlay-page .bazi-intro-text {
+  color: var(--area-section-foreground, #ffffff);
+}
+
+.bazi-overlay-page .bazi-demo-disclaimer {
+  color: var(--area-section-foreground, #ffffff);
+}
+
+.bazi-overlay-page .bazi-fixed-left {
+  left: max(1rem, env(safe-area-inset-left));
+  top: max(1rem, env(safe-area-inset-top));
+}
+
+.bazi-overlay-close-chip {
+  width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0;
+}
+
+.bazi-icon-glyph {
+  display: inline-block;
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+
+.bazi-close-glyph {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+}
+
+.bazi-close-glyph::before,
+.bazi-close-glyph::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+}
+
+.bazi-close-glyph::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.bazi-close-glyph::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.bazi-chevron-glyph {
+  width: 0.64rem;
+  height: 0.64rem;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-62%) rotate(45deg);
+}
+
+.bazi-arrow-glyph {
+  width: 0.72rem;
+  height: 0.72rem;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+}
+
+.bazi-arrow-left {
+  transform: rotate(135deg);
+}
+
+.bazi-arrow-right {
+  transform: rotate(-45deg);
+}
+
+.bazi-save-glyph {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-radius: 0.16rem;
+}
+
+.bazi-save-glyph::before {
+  position: absolute;
+  top: 0.14rem;
+  left: 0.2rem;
+  width: 0.42rem;
+  height: 0.22rem;
+  background: currentColor;
+  content: "";
+}
+
+.bazi-save-glyph::after {
+  position: absolute;
+  right: 0.18rem;
+  bottom: 0.14rem;
+  left: 0.18rem;
+  height: 0.26rem;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  content: "";
+}
+
+.bazi-time-glyph {
+  position: relative;
+  width: 2.7rem;
+  height: 2.7rem;
+}
+
+.bazi-time-glyph.is-day {
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  box-shadow:
+    0 -0.62rem 0 -0.18rem currentColor,
+    0 0.62rem 0 -0.18rem currentColor,
+    -0.62rem 0 0 -0.18rem currentColor,
+    0.62rem 0 0 -0.18rem currentColor;
+}
+
+.bazi-time-glyph.is-night {
+  border-radius: 999px;
+  box-shadow: inset -0.72rem 0 0 0 currentColor;
+}
+
+.bazi-elements-pie {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.bazi-app-store-button {
+  display: inline-flex;
+  min-width: min(17rem, calc(100vw - 3rem));
+  min-height: 4.4rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12rem;
+  border: 2px solid #000000;
+  border-radius: var(--bazi-radius-lg);
+  background: var(--bazi-secondary-background);
+  box-shadow: var(--bazi-shadow);
+  color: #0a0a0a;
+  font-family: var(--site-font-sans);
+  padding: 0.68rem 1.05rem 0.78rem;
+  text-decoration: none;
+  transition:
+    box-shadow 90ms linear,
+    transform 90ms linear;
+}
+
+.bazi-app-store-button:hover,
+.bazi-app-store-button:focus-visible {
+  outline: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 0 #000000;
+}
+
+.bazi-app-store-button:active {
+  transform: translate(var(--bazi-press-x), var(--bazi-press-y));
+  box-shadow: none;
+}
+
+.bazi-app-store-kicker {
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.bazi-app-store-label {
+  font-size: clamp(1.92rem, 5.4vw, 3.45rem);
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 0.94;
+}
+
+@media (max-width: 768px) {
+  .bazi-overlay-page .bazi-fixed-left {
+    left: max(0.75rem, env(safe-area-inset-left));
+    top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  .bazi-app-store-button {
+    min-height: 4rem;
+    padding: 0.58rem 0.9rem 0.68rem;
+  }
+
+  .bazi-app-store-label {
+    font-size: clamp(1.72rem, 10vw, 2.9rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bazi-app-store-button {
+    transition: none;
+  }
+
+  .bazi-app-store-button:hover,
+  .bazi-app-store-button:focus-visible,
+  .bazi-app-store-button:active {
+    transform: none;
+  }
+}

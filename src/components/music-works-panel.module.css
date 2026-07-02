@@ -1,0 +1,136 @@
+.musicWorks {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--area-section-background);
+  color: var(--area-section-foreground);
+}
+
+.scrollRegion {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding:
+    max(5.5rem, env(safe-area-inset-top))
+    max(7.75rem, calc(env(safe-area-inset-right) + 6.75rem))
+    max(13rem, calc(env(safe-area-inset-bottom) + 11.5rem))
+    max(7rem, calc(env(safe-area-inset-left) + 6rem));
+  scrollbar-width: none;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollRegion::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollRegion:focus-visible {
+  outline: none;
+}
+
+.list {
+  display: grid;
+  width: min(100%, 44rem);
+  margin-inline: auto;
+  gap: 6.75rem;
+}
+
+.work {
+  display: grid;
+  gap: 1.05rem;
+}
+
+.workHeader {
+  display: grid;
+  gap: 0;
+}
+
+.workTitle {
+  margin: 0;
+  color: currentColor;
+  font-family: var(--font-brand), "Arial Black", Impact, sans-serif;
+  font-size: 1.82rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+.workRole {
+  margin: 0;
+  color: currentColor;
+  font-family: var(--site-font-mono);
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.embed {
+  display: block;
+  width: 100%;
+  height: 352px;
+  border: 0;
+  border-radius: 12px;
+}
+
+.railTitle {
+  position: absolute;
+  top: 50%;
+  right: calc(env(safe-area-inset-right) + 0.5rem);
+  z-index: 2;
+  margin: 0;
+  color: currentColor;
+  font-family: var(--font-brand), "Arial Black", Impact, sans-serif;
+  font-size: 3.9rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.88;
+  text-orientation: mixed;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .scrollRegion {
+    padding:
+      max(4.25rem, calc(env(safe-area-inset-top) + 3.25rem))
+      max(4.6rem, calc(env(safe-area-inset-right) + 3.9rem))
+      max(11rem, calc(env(safe-area-inset-bottom) + 9.5rem))
+      max(4.1rem, calc(env(safe-area-inset-left) + 3.5rem));
+  }
+
+  .list {
+    gap: 4.5rem;
+  }
+
+  .work {
+    gap: 0.85rem;
+  }
+
+  .workTitle {
+    font-size: 1.4rem;
+    line-height: 0.95;
+  }
+
+  .workRole {
+    font-size: 0.82rem;
+    line-height: 1.2;
+  }
+
+  .railTitle {
+    right: calc(env(safe-area-inset-right) + 0.25rem);
+    font-size: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .workRole {
+    font-size: 1.18rem;
+  }
+}

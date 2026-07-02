@@ -1,0 +1,297 @@
+.systemsShowcase {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  color: var(--area-section-foreground);
+}
+
+.systemsShowcase.hasOverlay {
+  z-index: 6;
+}
+
+.artboard {
+  position: relative;
+  width: min(100vw, calc(100svh * 4 / 3));
+  aspect-ratio: 4 / 3;
+  flex: 0 0 auto;
+}
+
+.baziOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--area-section-background);
+  color: var(--area-section-foreground);
+}
+
+.deviceAction,
+.markButton {
+  position: absolute;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  transform: translateZ(0);
+  transform-origin: center;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
+.deviceAction:focus-visible,
+.markButton:focus-visible {
+  outline: clamp(1px, 0.18vw, 3px) solid rgb(255 255 255 / 0.82);
+  outline-offset: clamp(3px, 0.45vw, 8px);
+}
+
+.deviceArtwork,
+.markArtwork {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform-origin: center;
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 220ms ease;
+  will-change: transform;
+}
+
+.deviceArtwork img,
+.markArtwork img {
+  object-fit: contain;
+}
+
+.baziPhone {
+  top: 21.7%;
+  left: 23.1%;
+  width: 10.72%;
+  aspect-ratio: 428 / 864;
+}
+
+.reLaptop {
+  top: 22.1%;
+  left: 56.45%;
+  width: 28.08%;
+  aspect-ratio: 1124 / 796;
+}
+
+.projectCopy {
+  position: absolute;
+  width: 33%;
+  margin: 0;
+  color: currentColor;
+  font-family: var(--site-font-sans);
+  font-size: clamp(1rem, 1.72vw, 4.3rem);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.08;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.projectCopy span {
+  display: block;
+}
+
+.projectKicker {
+  margin-block-end: 0.32em;
+  font-size: 0.68em;
+  font-weight: 750;
+  line-height: 1.05;
+}
+
+.projectName {
+  font-weight: 850;
+  line-height: 1.05;
+}
+
+.baziCopy {
+  top: 56.9%;
+  left: 12.05%;
+}
+
+.reCopy {
+  top: 56.8%;
+  left: 51.25%;
+  width: 37.5%;
+}
+
+.markButton {
+  aspect-ratio: 1;
+}
+
+.baziIcon {
+  top: 72.55%;
+  left: 26.1%;
+  width: 4.8%;
+}
+
+.reCrest {
+  top: 71.8%;
+  left: 67.85%;
+  width: 4.95%;
+}
+
+.title {
+  position: absolute;
+  bottom: max(0.75rem, 1.4%);
+  left: 50%;
+  margin: 0;
+  color: currentColor;
+  font-family: var(--font-brand), "Arial Black", Impact, sans-serif;
+  font-size: clamp(2.75rem, 4.15vw, 10.4rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.78;
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .baziPhone:hover .deviceArtwork,
+  .baziPhone:focus-visible .deviceArtwork {
+    transform: rotate(-2.5deg) scale(1.045);
+  }
+
+  .reLaptop:hover .deviceArtwork,
+  .reLaptop:focus-visible .deviceArtwork {
+    transform: rotate(1.75deg) scale(1.035);
+  }
+
+  .markButton:hover,
+  .markButton:focus-visible {
+    transform: scale(1.035);
+  }
+}
+
+.baziPhone.isPressed .deviceArtwork {
+  transform: rotate(-10deg) scale(1.13);
+}
+
+.reLaptop.isPressed .deviceArtwork {
+  transform: rotate(7deg) scale(1.1);
+}
+
+.markButton:active,
+.markButton.isPressed {
+  transform: scale(0.965);
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .systemsShowcase {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding:
+      max(5.25rem, calc(env(safe-area-inset-top) + 4.75rem))
+      max(1rem, calc(env(safe-area-inset-right) + 1rem))
+      max(8rem, calc(env(safe-area-inset-bottom) + 7rem))
+      max(1rem, calc(env(safe-area-inset-left) + 1rem));
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .systemsShowcase::-webkit-scrollbar {
+    display: none;
+  }
+
+  .artboard {
+    display: grid;
+    width: 100%;
+    min-height: 100%;
+    aspect-ratio: auto;
+    grid-template-areas:
+      "phone laptop"
+      "bazi-copy re-copy"
+      "bazi-icon re-crest"
+      "title title";
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(0.8rem, 4vw, 1.4rem);
+    row-gap: clamp(0.9rem, 4vw, 1.4rem);
+    place-items: center;
+  }
+
+  .deviceAction,
+  .markButton,
+  .projectCopy,
+  .title {
+    position: relative;
+    top: auto;
+    left: auto;
+  }
+
+  .baziPhone {
+    grid-area: phone;
+    width: min(38vw, 9.5rem);
+  }
+
+  .reLaptop {
+    grid-area: laptop;
+    width: min(46vw, 13.5rem);
+  }
+
+  .baziCopy {
+    grid-area: bazi-copy;
+  }
+
+  .reCopy {
+    grid-area: re-copy;
+  }
+
+  .projectCopy {
+    width: 100%;
+    font-size: clamp(0.9rem, 4.5vw, 1.32rem);
+    line-height: 1.1;
+  }
+
+  .projectKicker {
+    margin-block-end: 0.2em;
+  }
+
+  .baziIcon {
+    grid-area: bazi-icon;
+    width: min(16vw, 4rem);
+  }
+
+  .reCrest {
+    grid-area: re-crest;
+    width: min(16vw, 4rem);
+  }
+
+  .title {
+    grid-area: title;
+    padding-block-start: clamp(0.75rem, 3vw, 1.25rem);
+    font-size: clamp(3.25rem, 17vw, 4.75rem);
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deviceAction,
+  .markButton,
+  .deviceArtwork,
+  .markArtwork {
+    transition: none;
+  }
+
+  .deviceAction:hover .deviceArtwork,
+  .deviceAction:focus-visible .deviceArtwork,
+  .deviceAction.isPressed .deviceArtwork,
+  .markButton:hover,
+  .markButton:focus-visible,
+  .markButton:active,
+  .markButton.isPressed {
+    transform: none;
+  }
+}

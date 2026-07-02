@@ -347,6 +347,15 @@
   transform: scale(0.94) rotate(2deg);
 }
 
+@media (max-width: 767px) and (orientation: portrait) {
+  .shell[data-active-panel="systems"] .czReturnButton,
+  .shell[data-active-panel="ears"] .czReturnButton {
+    right: max(env(safe-area-inset-right), 0.5rem);
+    bottom: max(env(safe-area-inset-bottom), 0.75rem);
+    width: 3.75rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .entryPiece,
   .returnButton,

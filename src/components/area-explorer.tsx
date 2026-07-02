@@ -15,7 +15,9 @@ import earsLabel from "../../assets/lable-forears.png";
 import eyesLabel from "../../assets/lable-foreyes.png";
 import systemsLabel from "../../assets/lable-forsystems.png";
 import systemsArt from "../../assets/systems art.png";
+import { MusicWorksPanel } from "@/components/music-works-panel";
 import { SectionScrollButton } from "@/components/section-scroll-button";
+import { SystemsShowcase } from "@/components/systems-showcase";
 import { VisualWorksGallery } from "@/components/visual-works-gallery";
 import { designTokens } from "@/config/design-tokens";
 import { cx } from "@/lib/class-names";
@@ -236,6 +238,13 @@ export function AreaExplorer() {
     }
 
     const handleSystemsWheelReturn = (event: WheelEvent) => {
+      const eventTarget =
+        event.target instanceof Element ? event.target : null;
+
+      if (eventTarget?.closest('[data-systems-scroll-contained="true"]')) {
+        return;
+      }
+
       if (event.deltaY >= 0 || viewport.scrollTop <= 1) {
         return;
       }
@@ -297,7 +306,7 @@ export function AreaExplorer() {
   }, [reducedMotionRef, scrollPageToLanding, scrollToPanel]);
 
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} data-active-panel={activePanel}>
       <div
         aria-label={`Area page ${activePanel === "home" ? "main" : activePanel}`}
         className={styles.viewport}
@@ -371,6 +380,7 @@ export function AreaExplorer() {
             </div>
           </div>
           <div className={cx(styles.panel, styles.earsPanel)}>
+            <MusicWorksPanel isActive={activePanel === "ears"} />
             <ReturnButton
               arrowClassName={styles.arrowLeft}
               className={styles.returnFromEars}
@@ -379,6 +389,7 @@ export function AreaExplorer() {
             />
           </div>
           <div className={cx(styles.panel, styles.systemsPanel)}>
+            <SystemsShowcase isActive={activePanel === "systems"} />
             <ReturnButton
               arrowClassName={styles.arrowUp}
               className={styles.returnFromSystems}

@@ -169,7 +169,7 @@
   font-size: clamp(1rem, 1.45vw, 2rem);
   font-weight: 900;
   letter-spacing: 0;
-  line-height: 0.95;
+  line-height: 1.05;
   text-align: center;
   text-decoration: none;
   text-wrap: balance;
@@ -355,10 +355,11 @@
 
   .visitLink {
     top: calc(0.75rem + 2.75rem + 0.65rem);
-    max-width: calc(100% - 1.5rem);
+    max-width: calc(100% - 1rem);
     min-height: 2.35rem;
-    padding: 0.45rem 0.75rem;
-    font-size: clamp(0.9rem, 5vw, 1.35rem);
+    padding: 0.45rem 0.5rem;
+    font-size: clamp(0.85rem, 4.7vw, 1.3rem);
+    line-height: 1.08;
   }
 
   .solarstaticPanel {
