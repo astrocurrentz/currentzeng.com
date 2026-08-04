@@ -109,7 +109,7 @@
 .resumeFrame {
   position: relative;
   width: min(92vw, 54rem);
-  aspect-ratio: 612 / 1465.95;
+  aspect-ratio: 612 / 1584;
   overflow: hidden;
 }
 
@@ -118,6 +118,11 @@
   inset: 0;
   z-index: 1;
   background:
+    linear-gradient(
+      var(--resume-section-background),
+      var(--resume-section-background)
+    )
+      center / 100% clamp(10px, 2vw, 24px) no-repeat,
     linear-gradient(
       var(--resume-section-background),
       var(--resume-section-background)

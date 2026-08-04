@@ -7,19 +7,19 @@ const resumePdfPath = "/resumes/current-zeng-resume-long-pager.pdf";
 const resumeProjectLinks = [
   {
     ariaLabel: "Open Reindeer Education Website and Visit Booking System",
-    height: 2.05,
+    height: 1.25,
     href: "https://www.reindeereducation.com/",
-    left: 22.222,
-    top: 63.15,
-    width: 50.654,
+    left: 21.65,
+    top: 66.65,
+    width: 47.2,
   },
   {
     ariaLabel: "Open Bazi Atlas iOS App in the App Store",
-    height: 2.05,
+    height: 1.25,
     href: "https://apps.apple.com/ca/app/b%C4%81z%C3%AC-atlas/id6761666394",
-    left: 22.222,
-    top: 76.25,
-    width: 19.935,
+    left: 21.65,
+    top: 78.9,
+    width: 22.5,
   },
 ] as const;
 
