@@ -18,8 +18,8 @@ const resumeProjectLinks = [
     height: 1.25,
     href: "https://apps.apple.com/ca/app/b%C4%81z%C3%AC-atlas/id6761666394",
     left: 21.65,
-    top: 78.9,
-    width: 22.5,
+    top: 76.25,
+    width: 21,
   },
 ] as const;
 
