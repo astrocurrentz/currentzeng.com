@@ -17,6 +17,7 @@ export function AreaSection() {
       className="relative isolate min-h-[var(--area-section-min-block)] snap-start snap-always overflow-hidden bg-[var(--area-section-background)] text-[var(--area-section-foreground)]"
       data-section-id="area"
       id="area"
+      tabIndex={-1}
       style={areaSectionStyle}
     >
       <h2 className="sr-only" id="area-heading">

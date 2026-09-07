@@ -36,6 +36,10 @@ body {
   scrollbar-width: none;
 }
 
+[data-section-scroll-root][data-menu-scrolling="true"] {
+  scroll-snap-type: none;
+}
+
 [data-section-scroll-root]::-webkit-scrollbar {
   display: none;
 }
@@ -44,7 +48,14 @@ body {
   outline: 2px solid currentColor;
   outline-offset: 4px;
 }
-#resume, #area, #contact { scroll-margin-top: 5rem; }
+#engineering,
+#resume {
+  scroll-margin-top: var(--portfolio-menu-clearance, 5rem);
+}
+
+#area {
+  scroll-margin-top: 0;
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; }
 }

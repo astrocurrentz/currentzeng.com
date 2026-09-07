@@ -2,6 +2,82 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { resumeUrl } from "../src/config/portfolio";
 
+const scrollRootSelector = "[data-section-scroll-root]";
+
+async function expectFlushAlignment(page: Page, sectionId: string) {
+  await expect
+    .poll(
+      () =>
+        page.locator(`#${sectionId}`).evaluate((section) => {
+          const scrollRoot = document.querySelector(
+            "[data-section-scroll-root]",
+          );
+
+          if (!(scrollRoot instanceof HTMLElement)) {
+            return Number.POSITIVE_INFINITY;
+          }
+
+          return Math.abs(
+            section.getBoundingClientRect().top -
+              scrollRoot.getBoundingClientRect().top,
+          );
+        }),
+      { timeout: 4000 },
+    )
+    .toBeLessThanOrEqual(2);
+  await expect(page.locator(scrollRootSelector)).not.toHaveAttribute(
+    "data-menu-scrolling",
+    "true",
+  );
+}
+
+async function expectTextSectionAlignment(page: Page, sectionId: string) {
+  await expect
+    .poll(
+      () =>
+        page.locator(`#${sectionId}`).evaluate((section) => {
+          const navigation = document.querySelector(
+            'nav[aria-label="Portfolio"]',
+          );
+
+          if (!(navigation instanceof HTMLElement)) {
+            return Number.POSITIVE_INFINITY;
+          }
+
+          const gap =
+            section.getBoundingClientRect().top -
+            navigation.getBoundingClientRect().bottom;
+          return Math.abs(gap - 16);
+        }),
+      { timeout: 4000 },
+    )
+    .toBeLessThanOrEqual(2);
+  await expect(page.locator(scrollRootSelector)).not.toHaveAttribute(
+    "data-menu-scrolling",
+    "true",
+  );
+}
+
+async function expectContactAlignment(page: Page) {
+  await expect
+    .poll(
+      () =>
+        page.locator(scrollRootSelector).evaluate((scrollRoot) =>
+          Math.abs(
+            scrollRoot.scrollHeight -
+              scrollRoot.clientHeight -
+              scrollRoot.scrollTop,
+          ),
+        ),
+      { timeout: 4000 },
+    )
+    .toBeLessThanOrEqual(2);
+  await expect(page.locator(scrollRootSelector)).not.toHaveAttribute(
+    "data-menu-scrolling",
+    "true",
+  );
+}
+
 async function openBazi(page: Page) {
   await page.goto("/#area");
   await page
@@ -36,6 +112,7 @@ test("landing navigation and direct engineering links expose real experience", a
   await navigation
     .getByRole("link", { name: "Engineering", exact: true })
     .click();
+  await expectTextSectionAlignment(page, "engineering");
   await expect(
     page.getByRole("heading", { name: "Engineering", exact: true }),
   ).toBeInViewport();
@@ -43,15 +120,98 @@ test("landing navigation and direct engineering links expose real experience", a
     page.getByRole("heading", { name: "QA automation & diagnostics" }),
   ).toBeVisible();
   await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
+  await expectTextSectionAlignment(page, "resume");
   await expect(page.locator("#resume-heading")).toBeInViewport();
   await navigation.getByRole("link", { name: "Contact", exact: true }).click();
+  await expectContactAlignment(page);
   await expect(
     page.getByRole("link", { name: "Email Current Zeng" }),
   ).toBeInViewport();
+  await navigation
+    .getByRole("link", { name: "Engineering", exact: true })
+    .click();
+  await expectTextSectionAlignment(page, "engineering");
   await page.goto("/#engineering");
+  await expectTextSectionAlignment(page, "engineering");
   await expect(
     page.getByRole("heading", { name: "Engineering", exact: true }),
   ).toBeInViewport();
+});
+
+test("Creative work reaches the viewport top with one click from a stale hash", async ({
+  page,
+}) => {
+  await page.goto("/#area");
+  await expectFlushAlignment(page, "area");
+
+  await page
+    .getByRole("region", { name: "Creative work" })
+    .getByRole("button", { name: "Scroll to intro page" })
+    .click();
+  await expectFlushAlignment(page, "intro");
+  await page.getByRole("button", { name: "Scroll to landing page" }).click();
+  await expectFlushAlignment(page, "landing");
+  await expect(page).toHaveURL(/#area$/);
+
+  await page
+    .getByRole("navigation", { name: "Portfolio" })
+    .getByRole("link", { name: "Creative work", exact: true })
+    .click();
+
+  await expectFlushAlignment(page, "area");
+  await expect(page).toHaveURL(/#area$/);
+});
+
+test("a new menu selection cancels and retargets an active scroll", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const navigation = page.getByRole("navigation", { name: "Portfolio" });
+
+  await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
+  await navigation
+    .getByRole("link", { name: "Creative work", exact: true })
+    .click();
+
+  await expectFlushAlignment(page, "area");
+  await expect(page).toHaveURL(/#area$/);
+});
+
+test("menu history restores earlier sections and the landing page", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const navigation = page.getByRole("navigation", { name: "Portfolio" });
+
+  await navigation
+    .getByRole("link", { name: "Engineering", exact: true })
+    .click();
+  await expectTextSectionAlignment(page, "engineering");
+  await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
+  await expectTextSectionAlignment(page, "resume");
+
+  await page.goBack();
+  await expect(page).toHaveURL(/#engineering$/);
+  await expectTextSectionAlignment(page, "engineering");
+  await page.goBack();
+  await expect(page).not.toHaveURL(/#/);
+  await expectFlushAlignment(page, "landing");
+});
+
+test("keyboard menu activation focuses the target without animation", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const creativeWorkLink = page
+    .getByRole("navigation", { name: "Portfolio" })
+    .getByRole("link", { name: "Creative work", exact: true });
+
+  await creativeWorkLink.focus();
+  await page.keyboard.press("Enter");
+
+  await expectFlushAlignment(page, "area");
+  await expect(page.locator("#area")).toBeFocused();
 });
 
 test("all résumé downloads and the viewer use one working PDF", async ({
