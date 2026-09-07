@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 const rootStyle = defineCssVars({
+  "--site-paper": designTokens.colors.resumePaper,
   "--site-background": designTokens.colors.brandRed,
   "--site-foreground": designTokens.colors.brandWhite,
   "--site-font-mono": designTokens.fonts.mono,

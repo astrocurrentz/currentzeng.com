@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Modal } from "@/components/modal";
 import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import baziIcon from "../../assets/codes/bazi icon.png";
 import baziPhone from "../../assets/codes/bazi phone.png";
@@ -28,6 +29,7 @@ function isModifiedClick(event: MouseEvent<HTMLAnchorElement>) {
 }
 
 export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
+  const overlayTriggerRef = useRef<HTMLElement | null>(null);
   const pressTimeoutRef = useRef<number | null>(null);
   const navTimeoutRef = useRef<number | null>(null);
   const baziOverlayTimeoutRef = useRef<number | null>(null);
@@ -90,7 +92,8 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
   );
 
   const openBaziOverlay = useCallback(
-    (target: Extract<PressedTarget, "bazi-phone" | "bazi-icon">) => {
+    (target: Extract<PressedTarget, "bazi-phone" | "bazi-icon">, trigger: HTMLElement) => {
+      overlayTriggerRef.current = trigger;
       pressTarget(target);
 
       const prefersReducedMotion = window.matchMedia(
@@ -142,23 +145,6 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
     };
   }, [isActive, isBaziOverlayOpen]);
 
-  useEffect(() => {
-    if (!isBaziOverlayOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsBaziOverlayOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isBaziOverlayOpen]);
 
   return (
     <section
@@ -182,7 +168,7 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
             styles.baziPhone,
             pressedTarget === "bazi-phone" && styles.isPressed,
           )}
-          onClick={() => openBaziOverlay("bazi-phone")}
+          onClick={(event) => openBaziOverlay("bazi-phone", event.currentTarget)}
           type="button"
         >
           <span className={styles.deviceArtwork}>
@@ -219,11 +205,11 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
 
         <p className={cx(styles.projectCopy, styles.baziCopy)}>
           <span className={styles.projectKicker}>iOS App</span>
-          <span className={styles.projectName}>Neobrutalism BaZi Atlas</span>
+          <span className={styles.projectName}>BaZi Atlas</span>
         </p>
 
         <p className={cx(styles.projectCopy, styles.reCopy)}>
-          <span className={styles.projectKicker}>Education Institute</span>
+          <span className={styles.projectKicker}>Educational institution</span>
           <span className={styles.projectName}>
             Branding &amp; Official Website
           </span>
@@ -236,7 +222,7 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
             styles.baziIcon,
             pressedTarget === "bazi-icon" && styles.isPressed,
           )}
-          onClick={() => openBaziOverlay("bazi-icon")}
+          onClick={(event) => openBaziOverlay("bazi-icon", event.currentTarget)}
           type="button"
         >
           <span className={styles.markArtwork}>
@@ -284,15 +270,15 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
       </div>
 
       {isBaziOverlayOpen ? (
-        <div
+        <Modal
+          onClose={() => setIsBaziOverlayOpen(false)}
+          returnFocusRef={overlayTriggerRef}
           aria-label="BaZi Atlas app demo"
-          aria-modal="true"
           className={styles.baziOverlay}
           data-systems-scroll-contained="true"
-          role="dialog"
         >
           <BaziOverlayPage onClose={() => setIsBaziOverlayOpen(false)} />
-        </div>
+        </Modal>
       ) : null}
     </section>
   );

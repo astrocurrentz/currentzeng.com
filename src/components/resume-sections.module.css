@@ -106,72 +106,13 @@
     max(1rem, calc(env(safe-area-inset-left) + 1rem));
 }
 
-.resumeFrame {
-  position: relative;
-  width: min(92vw, 54rem);
-  aspect-ratio: 612 / 1584;
-  overflow: hidden;
-}
-
-.resumeFrame::after {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(
-      var(--resume-section-background),
-      var(--resume-section-background)
-    )
-      center / 100% clamp(10px, 2vw, 24px) no-repeat,
-    linear-gradient(
-      var(--resume-section-background),
-      var(--resume-section-background)
-    )
-      top / 100% 8px no-repeat,
-    linear-gradient(
-      var(--resume-section-background),
-      var(--resume-section-background)
-    )
-      right / 8px 100% no-repeat,
-    linear-gradient(
-      var(--resume-section-background),
-      var(--resume-section-background)
-    )
-      bottom / 100% 32px no-repeat,
-    linear-gradient(
-      var(--resume-section-background),
-      var(--resume-section-background)
-    )
-      left / 8px 100% no-repeat;
-  content: "";
-  pointer-events: none;
-}
-
-.resumeObject {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  background: transparent;
-}
-
-.resumeProjectLink {
-  position: absolute;
-  z-index: 2;
-  display: block;
-  color: var(--resume-section-foreground);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.resumeProjectLink:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: -2px;
-  background: rgb(108 10 0 / 0.08);
-}
+.resumeContent { width: min(100%, 64rem); }
+.resumeContent h2 { font-size: clamp(2rem, 5vw, 4rem); margin: 1rem 0; }
+.resumeContent > p { max-width: 65ch; line-height: 1.6; }
+.resumeLinks { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin: 1rem 0 2rem; }
+.resumeLinks a { padding-block: .65rem; text-decoration: underline; text-underline-offset: .25em; }
+.resumeFrame { width: 100%; height: max(32rem, 85svh); border: 1px solid currentColor; }
+.resumeObject { display: block; width: 100%; height: 100%; border: 0; }
 
 .resumeFallback {
   display: grid;
@@ -214,7 +155,7 @@
   }
 
   .resumeFrame {
-    width: min(96vw, 30rem);
+    width: 100%;
   }
 }
 

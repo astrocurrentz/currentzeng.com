@@ -117,7 +117,7 @@ export const BAZI_INTRO_TEXT =
   '**八字·BāZì** uses a Neo-Brutalist interface and a meaningful color system to remove visual and language barriers, helping learners and practitioners read charts faster, communicate insights more clearly, and explore BaZi in a more intuitive way.';
 
 export const BAZI_UI_DEMO_DISCLAIMER =
-  'This is a UI demonstration. Please download the app to access the full functionality.';
+  'Interactive UI preview with sample data. Changing inputs does not recalculate the chart.';
 
 export const BAZI_SAMPLE_PILLARS: BaziPillarDemo[] = [
   { slot: 'year', slotZh: '年', slotEn: 'Year', stem: '辛', branch: '亥' },

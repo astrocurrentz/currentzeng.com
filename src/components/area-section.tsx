@@ -20,7 +20,7 @@ export function AreaSection() {
       style={areaSectionStyle}
     >
       <h2 className="sr-only" id="area-heading">
-        Area Page
+        Creative work
       </h2>
       <AreaExplorer />
     </section>

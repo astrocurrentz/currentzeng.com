@@ -6,6 +6,7 @@ import styles from "./section-scroll-button.module.css";
 export type SectionId =
   | "landing"
   | "intro"
+  | "engineering"
   | "area"
   | "resume-intro"
   | "resume";

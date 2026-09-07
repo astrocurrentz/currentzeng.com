@@ -1,12 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { Modal } from "@/components/modal";
 import Image, { type StaticImageData } from "next/image";
 import {
   type CSSProperties,
   type MouseEvent,
   useCallback,
-  useEffect,
   useRef,
   useState,
 } from "react";
@@ -262,25 +262,6 @@ export function VisualWorksGallery({ isActive }: VisualWorksGalleryProps) {
     [],
   );
 
-  useEffect(() => {
-    if (selectedWork === null) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") {
-        return;
-      }
-
-      event.preventDefault();
-      closeOverlay();
-    };
-
-    closeButtonRef.current?.focus();
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closeOverlay, selectedWork]);
 
   return (
     <section
@@ -324,12 +305,13 @@ export function VisualWorksGallery({ isActive }: VisualWorksGalleryProps) {
         </div>
       </div>
       {selectedWork === null ? null : (
-        <div
+        <Modal
+          onClose={closeOverlay}
+          returnFocusRef={activeTriggerRef}
           aria-labelledby={`visual-work-${selectedWork.id}-title`}
           className={styles.overlay}
           data-visual-work-overlay={selectedWork.id}
           id="visual-work-overlay"
-          role="dialog"
         >
           <div className={styles.overlayFrame}>
             <h3
@@ -393,11 +375,12 @@ export function VisualWorksGallery({ isActive }: VisualWorksGalleryProps) {
             className={styles.closeButton}
             onClick={closeOverlay}
             ref={closeButtonRef}
+            data-modal-close=""
             type="button"
           >
             <span aria-hidden="true" className={styles.closeIcon} />
           </button>
-        </div>
+        </Modal>
       )}
     </section>
   );

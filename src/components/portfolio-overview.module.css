@@ -1,0 +1,127 @@
+.navigation {
+  position: fixed;
+  z-index: 30;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  left: max(1rem, env(safe-area-inset-left));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(0.75rem, 3vw, 2rem);
+  width: fit-content;
+  max-width: calc(100% - 2rem);
+  margin-left: auto;
+  padding: 0.3rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--site-foreground) 40%, transparent);
+  border-radius: 2rem;
+  background: var(--site-background);
+  color: var(--site-paper);
+  font-size: clamp(0.78rem, 2.7vw, 0.95rem);
+}
+.navigation a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: none;
+}
+.navigation a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.navigation a:focus-visible,
+.textLink:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 5px;
+}
+.tagline {
+  position: absolute;
+  top: max(9rem, 25svh);
+  left: clamp(1.25rem, 4vw, 4.5rem);
+  right: 1.25rem;
+  max-width: 30ch;
+  font-size: clamp(1.3rem, 3vw, 2.4rem);
+  line-height: 1.25;
+}
+.tagline p {
+  margin: 0 0 1rem;
+}
+.tagline a {
+  font-size: 1rem;
+}
+.textLink {
+  display: inline-block;
+  padding-block: 0.6rem;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.engineering {
+  background: var(--site-paper);
+  color: var(--site-background);
+  padding: clamp(6rem, 10vw, 9rem) max(1.5rem, calc((100vw - 1100px) / 2));
+  scroll-snap-align: start;
+}
+.sectionHeader {
+  max-width: 52rem;
+  margin-bottom: 4rem;
+}
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sectionHeader h2 {
+  font-size: clamp(2.8rem, 8vw, 6.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.05em;
+  margin: 1rem 0 1.5rem;
+  overflow-wrap: anywhere;
+}
+.summary {
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  line-height: 1.55;
+}
+.project {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 1.5rem;
+  padding: 2.5rem 0;
+  border-top: 1px solid
+    color-mix(in srgb, var(--site-background) 30%, transparent);
+}
+.project h3,
+.creativeNote h3 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  line-height: 1.2;
+  margin: 0.75rem 0 1.25rem;
+}
+.project p,
+.creativeNote p {
+  max-width: 72ch;
+  line-height: 1.65;
+}
+.number {
+  padding-top: 0.25rem;
+  font-family: var(--site-font-mono);
+}
+.tools {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.creativeNote {
+  margin-top: 2rem;
+  border-top: 2px solid currentColor;
+  padding-top: 2rem;
+}
+@media (max-width: 600px) {
+  .project {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .sectionHeader {
+    margin-bottom: 2rem;
+  }
+  .navigation {
+    margin-inline: auto;
+  }
+}

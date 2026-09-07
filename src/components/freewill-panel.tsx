@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Modal } from "@/components/modal";
 import { cx } from "@/lib/class-names";
 import styles from "./freewill-panel.module.css";
 
@@ -185,6 +186,7 @@ function usePanelSize(elementRef: RefObject<HTMLElement | null>) {
 }
 
 export function FreewillPanel() {
+  const popupTriggerRef = useRef<HTMLElement | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null);
   const animationTimeoutsRef = useRef<Map<string, number>>(new Map());
   const suppressNextTileClickRef = useRef(false);
@@ -356,7 +358,7 @@ export function FreewillPanel() {
 
       animationTimeoutsRef.current.set(tileKey, timeoutId);
     },
-    [],
+    [setWipPopup],
   );
 
   useDrag(
@@ -454,8 +456,16 @@ export function FreewillPanel() {
       data-freewill-panel=""
       onDragStart={(event) => event.preventDefault()}
       ref={shellRef}
-      role="application"
+      role="region"
     >
+      <details className={styles.artworkMenu} data-freewill-control="true">
+        <summary>Artwork & music</summary>
+        {freewillAssets.filter((asset) => asset.wipSrc || asset.href).map((asset) => asset.href ? (
+          <a key={asset.label} href={asset.href} target="_blank" rel="noopener noreferrer">{asset.label} on Spotify ↗</a>
+        ) : (
+          <button type="button" key={asset.label} onClick={(event) => { popupTriggerRef.current = event.currentTarget; setWipPopup({ src: asset.wipSrc!, title: asset.wipTitle! }); }}>{asset.wipTitle}</button>
+        ))}
+      </details>
       <div aria-hidden="true" className={styles.tileLayer}>
         {tiles.map((tile) => {
           const displayScale = tile.asset.displayScale ?? defaultDisplayScale;
@@ -504,6 +514,7 @@ export function FreewillPanel() {
                     return;
                   }
 
+                  popupTriggerRef.current = shellRef.current?.querySelector("summary") ?? null;
                   triggerTileActivation(
                     tile.key,
                     tile.asset.href ?? null,
@@ -529,6 +540,7 @@ export function FreewillPanel() {
       </div>
 
       {wipPopup === null ? null : (
+        <Modal returnFocusRef={popupTriggerRef} aria-label={`${wipPopup.title} artwork preview`} onClose={() => setWipPopup(null)} className={styles.wipDialog}>
         <button
           aria-label={`Close ${wipPopup.title} WIP popup`}
           className={styles.wipOverlay}
@@ -548,6 +560,7 @@ export function FreewillPanel() {
             src={wipPopup.src}
           />
         </button>
+        </Modal>
       )}
     </div>
   );

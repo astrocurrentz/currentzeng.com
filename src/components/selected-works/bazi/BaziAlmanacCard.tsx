@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React from 'react';
 import {
   ALMANAC_ENERGY_COLORS,
   ALMANAC_ENERGY_LABELS,
@@ -8,7 +8,7 @@ import {
 } from '../../selectedWorksData';
 import { clamp } from '../shared';
 import { BaziPressableButton, GlyphSquare } from './BaziControls';
-import { ALMANAC_MAX_INDEX, ALMANAC_MIN_INDEX, LUCKY_COLOR_GLITCH_FRAMES, LUCKY_COLOR_GLITCH_STEP_MS } from './constants';
+import { ALMANAC_MAX_INDEX, ALMANAC_MIN_INDEX } from './constants';
 import { elementByGlyph } from './ganzhi';
 
 function ArrowIcon({ direction }: { direction: 'left' | 'right' }) {
@@ -18,10 +18,6 @@ function ArrowIcon({ direction }: { direction: 'left' | 'right' }) {
       className={`bazi-icon-glyph bazi-arrow-glyph bazi-arrow-${direction}`}
     />
   );
-}
-
-function SaveIcon() {
-  return <span aria-hidden="true" className="bazi-icon-glyph bazi-save-glyph" />;
 }
 
 function TimeIcon({ isNight }: { isNight: boolean }) {
@@ -63,84 +59,12 @@ function AlmanacEnergyBars({ entry }: { entry: (typeof GENERAL_ALMANAC_DEMO)[num
   );
 }
 
-function LuckyColorCard({ colorHex }: { colorHex: string }) {
-  const [displayColor, setDisplayColor] = useState(colorHex);
-  const frameTimeoutRef = useRef<number | null>(null);
-  const hasInitializedRef = useRef(false);
-
-  const glitchPalette = useMemo(() => {
-    const basePalette = Object.values(ELEMENT_COLORS);
-    return Array.from(new Set([...basePalette, 'var(--glitch-warm)', 'var(--glitch-cool)', colorHex]));
-  }, [colorHex]);
-
-  const stopBlink = useCallback((settleToFinal = false) => {
-    if (frameTimeoutRef.current !== null) {
-      window.clearTimeout(frameTimeoutRef.current);
-      frameTimeoutRef.current = null;
-    }
-
-    if (settleToFinal) {
-      setDisplayColor(colorHex);
-    }
-  }, [colorHex]);
-
-  const startBlink = useCallback(() => {
-    stopBlink(false);
-
-    let frame = 0;
-    const runFrame = () => {
-      if (frame >= LUCKY_COLOR_GLITCH_FRAMES) {
-        setDisplayColor(colorHex);
-        frameTimeoutRef.current = null;
-        return;
-      }
-
-      const nextColor = glitchPalette[Math.floor(Math.random() * glitchPalette.length)] ?? colorHex;
-      setDisplayColor(nextColor);
-      frame += 1;
-      frameTimeoutRef.current = window.setTimeout(runFrame, LUCKY_COLOR_GLITCH_STEP_MS);
-    };
-
-    runFrame();
-  }, [colorHex, glitchPalette, stopBlink]);
-
-  useEffect(() => (
-    () => {
-      stopBlink(true);
-    }
-  ), [stopBlink]);
-
-  useEffect(() => {
-    if (!hasInitializedRef.current) {
-      hasInitializedRef.current = true;
-      setDisplayColor(colorHex);
-      return;
-    }
-
-    startBlink();
-  }, [colorHex, startBlink]);
-
-  return (
-    <BaziPressableButton
-      className="bazi-lucky-cell"
-      style={{
-        backgroundColor: displayColor,
-        transition: 'background-color 72ms linear',
-      }}
-      ariaLabel="Lucky color"
-      onPointerDown={startBlink}
-    />
-  );
-}
-
 export function GeneralAlmanacCard({
   index,
   setIndex,
-  onStepNavigate,
 }: {
   index: number;
   setIndex: (next: number) => void;
-  onStepNavigate?: () => void;
 }) {
   const entry = GENERAL_ALMANAC_DEMO[index] ?? GENERAL_ALMANAC_DEMO[0];
   const sixWordsStem = [entry.sixWords.year.stem, entry.sixWords.month.stem, entry.sixWords.day.stem];
@@ -156,9 +80,7 @@ export function GeneralAlmanacCard({
     <article className="bazi-card bazi-section-card bazi-almanac-card" data-bazi-update-glitch="almanac-card">
       <div className="bazi-almanac-top-row">
         <p className="bazi-almanac-date">Date:{entry.date.replace(/-/g, '/')}</p>
-        <BaziPressableButton className="bazi-chip bazi-save-chip" ariaLabel="Save image">
-          <SaveIcon />
-        </BaziPressableButton>
+
       </div>
 
       <div className="bazi-almanac-two-col">
@@ -168,7 +90,7 @@ export function GeneralAlmanacCard({
             <BaziPressableButton className="bazi-lucky-cell number" ariaLabel="Lucky number">
               {entry.lucky.number}
             </BaziPressableButton>
-            <LuckyColorCard colorHex={entry.lucky.colorHex} />
+            <span className="bazi-lucky-cell" style={{ backgroundColor: entry.lucky.colorHex }} role="img" aria-label={`Lucky color: ${entry.lucky.colorNameZh}`} />
             <BaziPressableButton
               className="bazi-lucky-cell direction"
               style={{ backgroundColor: ELEMENT_COLORS[elementByGlyph(entry.lucky.directionBranch)] }}
@@ -191,15 +113,15 @@ export function GeneralAlmanacCard({
       </div>
 
       <div className="bazi-card bazi-almanac-inner-card bazi-six-glyphs-card">
-        <h4>Today Six Glyphs</h4>
+        <h4>Six characters for this date</h4>
         <div className="bazi-six-glyphs-layout">
           <BaziPressableButton
             className="bazi-chip bazi-nav-icon"
             onClick={() => {
               setIndex(clamp(index - 1, ALMANAC_MIN_INDEX, ALMANAC_MAX_INDEX));
-              onStepNavigate?.();
             }}
-            ariaLabel="Previous Day"
+            disabled={index === ALMANAC_MIN_INDEX}
+            ariaLabel="Previous day"
           >
             <ArrowIcon direction="left" />
           </BaziPressableButton>
@@ -217,9 +139,9 @@ export function GeneralAlmanacCard({
             className="bazi-chip bazi-nav-icon"
             onClick={() => {
               setIndex(clamp(index + 1, ALMANAC_MIN_INDEX, ALMANAC_MAX_INDEX));
-              onStepNavigate?.();
             }}
-            ariaLabel="Next Day"
+            disabled={index === ALMANAC_MAX_INDEX}
+            ariaLabel="Next day"
           >
             <ArrowIcon direction="right" />
           </BaziPressableButton>

@@ -223,7 +223,7 @@ export function ElementsDistributionCard({ captionGlitchSignal }: { captionGlitc
     <article className="bazi-card bazi-section-card bazi-elements-card">
       <h3 className="bazi-card-title bazi-card-title-left">Element Distribution</h3>
       <GlitchText
-        text="Spin donut"
+        text="Drag to spin, or use the rotation buttons"
         tag="p"
         wrapToWidth={false}
         scrambleOnMount={false}
@@ -274,6 +274,13 @@ export function ElementsDistributionCard({ captionGlitchSignal }: { captionGlitc
         </div>
       </div>
 
+      <div className="bazi-chart-controls">
+        <button type="button" className="bazi-chip" onClick={() => setDonutRotation((rotation) => rotation - 30)}>Rotate left</button>
+        <button type="button" className="bazi-chip" onClick={() => setDonutRotation((rotation) => rotation + 30)}>Rotate right</button>
+      </div>
+      <ul className="bazi-chart-legend">
+        {chartData.map((item) => <li key={item.key}>{item.name}: {item.value}</li>)}
+      </ul>
       <span className="bazi-elements-selected" aria-hidden>
         {selectedElement?.name}
       </span>

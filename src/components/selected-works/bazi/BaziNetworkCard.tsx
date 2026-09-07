@@ -28,7 +28,6 @@ export function InfluenceNetworkCard({ captionGlitchSignal }: { captionGlitchSig
   const initPositionsRef = useRef<Record<string, Point>>({});
   const positionsRef = useRef<Record<string, Point>>({});
   const dragStateRef = useRef<Map<number, { nodeId: string; startX: number; startY: number; startPos: Point; pointerType: string }>>(new Map());
-  const hasMovedRef = useRef(false);
   const prevDraggedCountRef = useRef(0);
   const prevDraggedRef = useRef<string | null>(null);
   const lastReleasedNodeRef = useRef<string | null>(null);
@@ -120,6 +119,7 @@ export function InfluenceNetworkCard({ captionGlitchSignal }: { captionGlitchSig
   }, [edges, getViewportBounds, maxGodWeight, nodes, size.height, size.width, withDayMasterCentered]);
 
   const runSimulation = useCallback(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (rafRef.current) return;
     if (Object.keys(initPositionsRef.current).length === 0) return;
 
@@ -141,6 +141,11 @@ export function InfluenceNetworkCard({ captionGlitchSignal }: { captionGlitchSig
     setIsSimulating(true);
 
     const tick = (now: number) => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        rafRef.current = null;
+        setIsSimulating(false);
+        return;
+      }
       const dtMs = lastTickRef.current !== null ? now - lastTickRef.current : 1000 / 60;
       lastTickRef.current = now;
 
@@ -236,7 +241,6 @@ export function InfluenceNetworkCard({ captionGlitchSignal }: { captionGlitchSig
         return;
       }
       const { nodeId, startX, startY, startPos, pointerType } = dragState;
-      hasMovedRef.current = true;
 
       const raw = {
         x: startPos.x + (event.clientX - startX),
@@ -258,7 +262,7 @@ export function InfluenceNetworkCard({ captionGlitchSignal }: { captionGlitchSig
         viewportWidth: window.innerWidth,
         viewportHeight: window.innerHeight,
       };
-      const isMobileDrag = pointerType === 'touch' || window.innerWidth <= 768;
+      const isMobileDrag = pointerType === 'touch' || window.innerWidth <= 768 || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const { positions: simulatedPositions, velocities } = applyPhysicsTriple(
         { ...positionsRef.current, [nodeId]: final },
         nodes,
@@ -314,7 +318,6 @@ export function InfluenceNetworkCard({ captionGlitchSignal }: { captionGlitchSig
       }
 
       event.preventDefault();
-      hasMovedRef.current = false;
 
       if (rafRef.current && dragStateRef.current.size === 0) {
         cancelAnimationFrame(rafRef.current);
@@ -369,12 +372,6 @@ export function InfluenceNetworkCard({ captionGlitchSignal }: { captionGlitchSig
     [handleDocPointerUp],
   );
 
-  const handleClick = useCallback(() => {
-    if (hasMovedRef.current) {
-      return;
-    }
-  }, []);
-
   const getPosition = useCallback(
     (id: string): Point => {
       if (id === DAY_MASTER_NODE_ID) {
@@ -389,7 +386,7 @@ export function InfluenceNetworkCard({ captionGlitchSignal }: { captionGlitchSig
     <article className="bazi-card bazi-section-card bazi-network-card" data-disable-custom-cursor="true">
       <h3 className="bazi-card-title bazi-card-title-left">Influence Network</h3>
       <GlitchText
-        text="Drag circles"
+        text="Drag circles or focus a circle and use arrow keys"
         tag="p"
         wrapToWidth={false}
         scrambleOnMount={false}
@@ -411,8 +408,16 @@ export function InfluenceNetworkCard({ captionGlitchSignal }: { captionGlitchSig
             <BaziPressableButton
               key={node.id}
               className={`bazi-network-node ${draggedIds.has(node.id) ? 'is-dragging' : ''}`}
-              onClick={handleClick}
-              onPointerDown={(event) => handlePointerDown(event, node.id)}
+              ariaLabel={isDayMaster ? 'Day master' : `${node.en}: ${secondaryLabel}. Move with arrow keys`}
+              onPointerDown={isDayMaster ? undefined : (event) => handlePointerDown(event, node.id)}
+              onKeyDown={isDayMaster ? undefined : (event) => {
+                const moves: Record<string, Point> = { ArrowLeft: { x: -10, y: 0 }, ArrowRight: { x: 10, y: 0 }, ArrowUp: { x: 0, y: -10 }, ArrowDown: { x: 0, y: 10 } };
+                const delta = moves[event.key];
+                if (!delta) return;
+                event.preventDefault();
+                const next = clampPoint({ x: point.x + delta.x, y: point.y + delta.y }, size.width, size.height, radius);
+                setPositions((current) => ({ ...current, [node.id]: next }));
+              }}
               onPointerMove={handlePointerMove}
               onPointerUp={(event) => handlePointerUp(event, node.id)}
               onPointerCancel={(event) => handlePointerUp(event, node.id)}

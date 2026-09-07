@@ -39,3 +39,31 @@ body {
 [data-section-scroll-root]::-webkit-scrollbar {
   display: none;
 }
+
+:where(a, button, input, select, [tabindex]):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+#resume, #area, #contact { scroll-margin-top: 5rem; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}
+
+.bazi-demo .bazi-field-label { display: flex; flex-direction: column; gap: .45rem; min-width: 0; font-size: .9rem; font-weight: 600; }
+.bazi-demo .bazi-native-select-wrap { display: block; width: 100%; }
+.bazi-demo .bazi-native-select { display: block; }
+.bazi-demo .bazi-static-value { cursor: default; }
+.bazi-demo .bazi-pressable:disabled { cursor: default; opacity: .45; }
+.bazi-demo .bazi-intro-store-link { text-decoration: underline; text-underline-offset: .25em; padding: .75rem; }
+.bazi-demo .bazi-picker-overlay { padding: 1rem; overflow-y: auto; }
+.bazi-demo :where(button, input, select, a):focus-visible { outline: 3px solid var(--bazi-foreground); outline-offset: 4px; }
+.bazi-overlay-page .bazi-intro-store-link { color: var(--area-section-foreground, #fff); }
+.bazi-chart-controls { display: flex; justify-content: center; gap: .75rem; }
+.bazi-chart-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem 1rem; list-style: none; padding: 0; font-size: .9rem; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+.bazi-demo.bazi-overlay-page :is(input.bazi-input-field, select.bazi-input-field):focus-visible {
+  outline: 3px solid var(--bazi-border);
+  outline-offset: 4px;
+}

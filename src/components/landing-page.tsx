@@ -1,3 +1,7 @@
+import { EngineeringSection } from "@/components/engineering-section";
+import { PortfolioNavigation } from "@/components/portfolio-navigation";
+import { resumeUrl } from "@/config/portfolio";
+import styles from "./portfolio-overview.module.css";
 import { AreaSection } from "@/components/area-section";
 import { BrandWordmark } from "@/components/brand-wordmark";
 import { LandingStage } from "@/components/landing-stage";
@@ -10,12 +14,24 @@ import { SecondSection } from "@/components/second-section";
 export function LandingPage() {
   return (
     <div
-      className="relative isolate h-[100svh] overflow-y-auto snap-y snap-mandatory"
+      className="relative isolate h-[100svh] overflow-y-auto snap-y snap-proximity"
       data-section-scroll-root
     >
+      <PortfolioNavigation />
       <main className="relative z-10">
         <LandingStage sectionId="landing">
           <BrandWordmark />
+          <div className={styles.tagline}>
+            <p>QA engineer, software builder, and musician.</p>
+            <a
+              className={styles.textLink}
+              href={resumeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open résumé PDF ↗
+            </a>
+          </div>
           <SectionScrollButton
             ariaLabel="Scroll to intro page"
             direction="down"
@@ -24,6 +40,7 @@ export function LandingPage() {
           />
         </LandingStage>
         <SecondSection />
+        <EngineeringSection />
         <AreaSection />
         <ResumeIntroSection />
         <ResumeSection />

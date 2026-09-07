@@ -100,3 +100,7 @@
     animation: none;
   }
 }
+.artworkMenu { position: absolute; z-index: 5; top: .75rem; left: .75rem; max-width: calc(100% - 4.5rem); max-height: calc(100% - 1.5rem); overflow: auto; padding: .65rem 1rem; background: var(--area-section-background); border: 1px solid currentColor; cursor: auto; touch-action: pan-y; }
+.artworkMenu summary { cursor: pointer; padding-block: .25rem; }
+.artworkMenu a, .artworkMenu button { display: block; padding-block: .65rem; text-align: left; cursor: pointer; }
+.wipDialog { background: var(--area-section-background, #6c0a00); }

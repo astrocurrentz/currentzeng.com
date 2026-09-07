@@ -1,27 +1,7 @@
 import { designTokens } from "@/config/design-tokens";
+import { resumeUrl, projectLinks } from "@/config/portfolio";
 import { defineCssVars } from "@/lib/css-vars";
 import styles from "./resume-sections.module.css";
-
-const resumePdfPath = "/resumes/current-zeng-resume-long-pager.pdf";
-
-const resumeProjectLinks = [
-  {
-    ariaLabel: "Open Reindeer Education Website and Visit Booking System",
-    height: 1.25,
-    href: "https://www.reindeereducation.com/",
-    left: 21.65,
-    top: 66.65,
-    width: 47.2,
-  },
-  {
-    ariaLabel: "Open Bazi Atlas iOS App in the App Store",
-    height: 1.25,
-    href: "https://apps.apple.com/ca/app/b%C4%81z%C3%AC-atlas/id6761666394",
-    left: 21.65,
-    top: 76.25,
-    width: 21,
-  },
-] as const;
 
 const resumeSectionStyle = defineCssVars({
   "--resume-section-background": designTokens.colors.resumePaper,
@@ -37,38 +17,49 @@ export function ResumeSection() {
       className={styles.resumeSection}
       data-section-id="resume"
       id="resume"
+      tabIndex={-1}
       style={resumeSectionStyle}
     >
-      <h2 className="sr-only" id="resume-heading">
-        Resume
-      </h2>
-      <div className={styles.resumeFrame}>
-        <object
-          aria-label="Current Zeng resume PDF"
-          className={styles.resumeObject}
-          data={`${resumePdfPath}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
-          type="application/pdf"
+      <div className={styles.resumeContent}>
+        <h2 id="resume-heading">Résumé</h2>
+        <p>
+          My experience includes QA automation, diagnostic tooling, and testing
+          across software, APIs, firmware, and hardware, alongside web and iOS
+          product development.
+        </p>
+        <nav
+          aria-label="Résumé and project links"
+          className={styles.resumeLinks}
         >
-          <p className={styles.resumeFallback}>
-            <a href={resumePdfPath}>Open the résumé PDF</a>
-          </p>
-        </object>
-        {resumeProjectLinks.map((link) => (
+          <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
+            Open résumé PDF ↗
+          </a>
+          <a href={resumeUrl} download>
+            Download résumé PDF
+          </a>
           <a
-            aria-label={link.ariaLabel}
-            className={styles.resumeProjectLink}
-            href={link.href}
-            key={link.href}
-            rel="noopener noreferrer"
-            style={{
-              height: `${link.height}%`,
-              left: `${link.left}%`,
-              top: `${link.top}%`,
-              width: `${link.width}%`,
-            }}
+            href={projectLinks.reindeer}
             target="_blank"
-          />
-        ))}
+            rel="noopener noreferrer"
+          >
+            Reindeer Education ↗
+          </a>
+          <a href={projectLinks.bazi} target="_blank" rel="noopener noreferrer">
+            BaZi Atlas on the App Store ↗
+          </a>
+        </nav>
+        <div className={styles.resumeFrame}>
+          <object
+            aria-label="Current Zeng résumé PDF"
+            className={styles.resumeObject}
+            data={resumeUrl}
+            type="application/pdf"
+          >
+            <p className={styles.resumeFallback}>
+              <a href={resumeUrl}>Open the résumé PDF</a>
+            </p>
+          </object>
+        </div>
       </div>
     </section>
   );

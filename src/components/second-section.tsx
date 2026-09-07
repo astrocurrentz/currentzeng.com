@@ -28,10 +28,10 @@ export function SecondSection() {
       />
       <IntroRoleCluster />
       <SectionScrollButton
-        ariaLabel="Scroll to area page"
+        ariaLabel="Scroll to engineering"
         direction="down"
         placement="bottom"
-        targetSection="area"
+        targetSection="engineering"
       />
     </section>
   );

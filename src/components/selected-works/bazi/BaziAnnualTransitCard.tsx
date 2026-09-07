@@ -1,4 +1,4 @@
-import React, { CSSProperties, useCallback, useState } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import { ANNUAL_TRANSIT_DEMO_RANGE, BAZI_SAMPLE_PILLARS, ELEMENT_COLORS } from '../../selectedWorksData';
 import { clamp } from '../shared';
 import { BaziPressableButton, GlyphSquare } from './BaziControls';
@@ -18,25 +18,23 @@ function TransitPillarGrid({
   transitStem,
   transitBranch,
   pressed,
-  glitchSignal,
 }: {
   transitStem: string;
   transitBranch: string;
   pressed: boolean;
-  glitchSignal?: number | string;
 }) {
   const natalStems = BAZI_SAMPLE_PILLARS.map((pillar) => pillar.stem);
   const natalBranches = BAZI_SAMPLE_PILLARS.map((pillar) => pillar.branch);
 
   return (
     <div className="bazi-transit-grid">
-      <GlyphSquare glyph={transitStem} showPinyin pressed={pressed} glitchSignal={glitchSignal} />
+      <GlyphSquare glyph={transitStem} showPinyin pressed={pressed} />
       <div aria-hidden />
       {natalStems.map((stem, index) => (
         <GlyphSquare key={`natal-stem-${index}`} glyph={stem} showPinyin />
       ))}
 
-      <GlyphSquare glyph={transitBranch} showPinyin pressed={pressed} glitchSignal={glitchSignal} />
+      <GlyphSquare glyph={transitBranch} showPinyin pressed={pressed} />
       <div aria-hidden />
       {natalBranches.map((branch, index) => (
         <GlyphSquare key={`natal-branch-${index}`} glyph={branch} showPinyin />
@@ -73,15 +71,11 @@ function TransitInfoField({
 export function AnnualTransitCard({
   transitIndex,
   setTransitIndex,
-  onStepNavigate,
 }: {
   transitIndex: number;
   setTransitIndex: (next: number) => void;
-  onStepNavigate?: () => void;
 }) {
   const [nowPressed, setNowPressed] = useState(false);
-  const [linkedTransitGlyphGlitchSignal, setLinkedTransitGlyphGlitchSignal] = useState(0);
-  const [linkedTransitNavGlitchSignal, setLinkedTransitNavGlitchSignal] = useState(0);
 
   const entry = ANNUAL_TRANSIT_DEMO_RANGE[transitIndex] ?? ANNUAL_TRANSIT_DEMO_RANGE[0];
   const age = entry.age;
@@ -104,11 +98,6 @@ export function AnnualTransitCard({
         color: 'var(--bazi-main-foreground)',
       };
 
-  const triggerNowLinkedButtonGlitch = useCallback(() => {
-    setLinkedTransitGlyphGlitchSignal((currentSignal) => currentSignal + 1);
-    setLinkedTransitNavGlitchSignal((currentSignal) => currentSignal + 1);
-  }, []);
-
   return (
     <article className="bazi-card bazi-section-card bazi-transit-card" data-bazi-update-glitch="transit-card">
       <div className="bazi-transit-header">
@@ -117,16 +106,10 @@ export function AnnualTransitCard({
           className="bazi-chip bazi-now-chip"
           onPointerDown={() => {
             setNowPressed(true);
-            triggerNowLinkedButtonGlitch();
           }}
           onPointerUp={() => setNowPressed(false)}
           onPointerLeave={() => setNowPressed(false)}
           onPointerCancel={() => setNowPressed(false)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              triggerNowLinkedButtonGlitch();
-            }
-          }}
           onClick={() => {
             setNowPressed(false);
             const currentAge = new Date().getFullYear() - 1971;
@@ -141,7 +124,6 @@ export function AnnualTransitCard({
         transitStem={entry.stem}
         transitBranch={entry.branch}
         pressed={nowPressed}
-        glitchSignal={linkedTransitGlyphGlitchSignal}
       />
 
       <div className="bazi-transit-info-row top-row">
@@ -158,11 +140,10 @@ export function AnnualTransitCard({
       <div className="bazi-transit-nav">
         <BaziPressableButton
           className="bazi-chip bazi-nav-icon"
-          glitchSignal={linkedTransitNavGlitchSignal}
           onClick={() => {
             setTransitIndex(clamp(transitIndex - 1, 0, ANNUAL_TRANSIT_DEMO_RANGE.length - 1));
-            onStepNavigate?.();
           }}
+          disabled={transitIndex === 0}
           ariaLabel="Previous year"
         >
           <ArrowIcon direction="left" />
@@ -181,11 +162,10 @@ export function AnnualTransitCard({
 
         <BaziPressableButton
           className="bazi-chip bazi-nav-icon"
-          glitchSignal={linkedTransitNavGlitchSignal}
           onClick={() => {
             setTransitIndex(clamp(transitIndex + 1, 0, ANNUAL_TRANSIT_DEMO_RANGE.length - 1));
-            onStepNavigate?.();
           }}
+          disabled={transitIndex === ANNUAL_TRANSIT_DEMO_RANGE.length - 1}
           ariaLabel="Next year"
         >
           <ArrowIcon direction="right" />

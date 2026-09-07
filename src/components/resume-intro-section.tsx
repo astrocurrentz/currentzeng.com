@@ -92,7 +92,7 @@ export function ResumeIntroSection() {
         </h2>
       </div>
       <SectionScrollButton
-        ariaLabel="Scroll to resume"
+        ariaLabel="Scroll to résumé"
         direction="down"
         placement="bottom"
         targetSection="resume"

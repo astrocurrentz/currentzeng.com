@@ -100,7 +100,7 @@ export function PortfolioFooter() {
         : "";
 
   return (
-    <footer className={styles.footer} style={footerStyle}>
+    <footer id="contact" tabIndex={-1} className={styles.footer} style={footerStyle}>
       <p aria-hidden="true" className={styles.wordmark}>
         {siteCopy.footer.wordmark}
       </p>

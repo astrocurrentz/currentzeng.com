@@ -1,7 +1,7 @@
 export const siteCopy = {
   metadata: {
     title: "Current Zeng",
-    description: "Portfolio of Current Zeng.",
+    description: "Current Zeng — QA engineer, software builder, and musician. Explore automation experience, software projects, and creative work.",
   },
   brand: {
     ariaLabel: "Current Zeng",

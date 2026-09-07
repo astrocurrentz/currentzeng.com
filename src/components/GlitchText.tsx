@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useReducedMotionPreference } from "@/hooks/use-reduced-motion";
 import { createGlitchFrames } from "@/lib/glitch-text";
 
 type GlitchTextProps = {
@@ -52,6 +59,7 @@ export default function GlitchText({
   text,
   texts,
 }: GlitchTextProps) {
+  const reducedMotion = useReducedMotionPreference();
   const sequence = useMemo(
     () => (texts?.length ? texts : text ? [text] : [""]),
     [text, texts],
@@ -99,6 +107,7 @@ export default function GlitchText({
   const startScramble = useCallback(
     (targetText: string, nextIndex: number) => {
       clearTimers();
+      if (reducedMotion) return;
 
       const frameCount = Math.max(
         2,
@@ -136,6 +145,7 @@ export default function GlitchText({
     },
     [
       accentLettersEnabled,
+      reducedMotion,
       clearTimers,
       queueNextLoop,
       scrambleRevealStep,
@@ -193,22 +203,27 @@ export default function GlitchText({
 
   return (
     <Tag className={`${className} relative inline-block max-w-full`}>
-      {displayText.split("").map((character, index) =>
-        character === "\n" ? (
-          <br key={`break-${index}`} />
-        ) : (
-          <span
-            className={
-              accentLettersEnabled && index === accentIndex
-                ? "text-[var(--accent-secondary)]"
-                : undefined
-            }
-            key={`char-${index}`}
-          >
-            {character}
-          </span>
-        ),
-      )}
+      <span className="sr-only">{sequence[activeIndex % sequence.length]}</span>
+      <span aria-hidden="true">
+        {(reducedMotion ? sequence[activeIndex % sequence.length] : displayText)
+          .split("")
+          .map((character, index) =>
+            character === "\n" ? (
+              <br key={`break-${index}`} />
+            ) : (
+              <span
+                className={
+                  accentLettersEnabled && index === accentIndex
+                    ? "text-[var(--accent-secondary)]"
+                    : undefined
+                }
+                key={`char-${index}`}
+              >
+                {character}
+              </span>
+            ),
+          )}
+      </span>
     </Tag>
   );
 }

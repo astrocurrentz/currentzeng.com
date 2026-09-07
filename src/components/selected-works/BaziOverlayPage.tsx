@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   BAZI_HOME_COLOR_SEQUENCE,
   BAZI_HOME_COLOR_STORAGE_KEY,
@@ -9,6 +9,7 @@ import {
   type PillarSlot,
 } from '../selectedWorksData';
 import { clamp } from './shared';
+import { projectLinks } from '@/config/portfolio';
 import { GeneralAlmanacCard } from './bazi/BaziAlmanacCard';
 import { AnnualTransitCard } from './bazi/BaziAnnualTransitCard';
 import { BaziChartSection } from './bazi/BaziChartSection';
@@ -19,15 +20,12 @@ import { InfluenceNetworkCard } from './bazi/BaziNetworkCard';
 import {
   ALMANAC_MAX_INDEX,
   ALMANAC_MIN_INDEX,
-  BAZI_SECTION_GLITCH_REVEAL_STEP,
-  BAZI_SECTION_GLITCH_STEP_MS,
   SECTION_CONTENT_MIN_HEIGHT_STYLE,
   SECTION_MIN_HEIGHT_STYLE,
 } from './bazi/constants';
-import { collectSectionTextTargets, scrambleSectionText, type SectionTextTarget } from './bazi/glitch';
 import type { DirectPickerState, InputMode } from './bazi/types';
 
-const appStoreUrl = 'https://apps.apple.com/ca/app/b%C4%81z%C3%AC-atlas/id6761666394';
+const appStoreUrl = projectLinks.bazi;
 
 function BaziIntroParagraph() {
   const parts = BAZI_INTRO_TEXT.split('**');
@@ -53,6 +51,7 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
     const stored = Number.parseInt(window.localStorage.getItem(BAZI_HOME_COLOR_STORAGE_KEY) ?? '0', 10);
     return normalizeColorCycleIndex(Number.isFinite(stored) ? stored : 0);
   });
+  const pickerTriggerRef = useRef<HTMLElement | null>(null);
   const [picker, setPicker] = useState<DirectPickerState>(null);
   const [directEntry, setDirectEntry] = useState<DirectEntryState>(createEmptyDirectEntryState);
   const [directEntryBirthYear, setDirectEntryBirthYear] = useState('');
@@ -69,81 +68,15 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
   const [transitIndex, setTransitIndex] = useState(55);
   const [almanacIndex, setAlmanacIndex] = useState(10);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [transitStepScrambleSignal, setTransitStepScrambleSignal] = useState(0);
-  const [almanacStepScrambleSignal, setAlmanacStepScrambleSignal] = useState(0);
   const [networkCaptionGlitchSignal, setNetworkCaptionGlitchSignal] = useState(0);
   const [elementsCaptionGlitchSignal, setElementsCaptionGlitchSignal] = useState(0);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const activeSectionRef = useRef<string | null>(null);
-  const sectionGlitchIntervalRef = useRef<number | null>(null);
-  const sectionGlitchTargetsRef = useRef<SectionTextTarget[]>([]);
 
   useEffect(() => {
     window.localStorage.setItem(BAZI_HOME_COLOR_STORAGE_KEY, String(baziButtonColorIndex));
   }, [baziButtonColorIndex]);
-
-  const stopSectionTextGlitch = useCallback((restoreOriginalText = false) => {
-    if (sectionGlitchIntervalRef.current !== null) {
-      window.clearInterval(sectionGlitchIntervalRef.current);
-      sectionGlitchIntervalRef.current = null;
-    }
-
-    if (restoreOriginalText) {
-      sectionGlitchTargetsRef.current.forEach((target) => {
-        if (target.node.isConnected) {
-          target.node.data = target.originalText;
-        }
-      });
-    }
-
-    sectionGlitchTargetsRef.current = [];
-  }, []);
-
-  const startSectionTextGlitch = useCallback((sectionElement: HTMLElement) => {
-    stopSectionTextGlitch(true);
-
-    const targets = collectSectionTextTargets(sectionElement);
-    if (!targets.length) {
-      return;
-    }
-
-    sectionGlitchTargetsRef.current = targets;
-
-    let revealIndex = 0;
-    const maxTextLength = Math.max(...targets.map((target) => target.originalText.length));
-
-    sectionGlitchIntervalRef.current = window.setInterval(() => {
-      targets.forEach((target) => {
-        if (!target.node.isConnected) {
-          return;
-        }
-
-        target.node.data = scrambleSectionText(target.originalText, revealIndex);
-      });
-
-      if (revealIndex >= maxTextLength) {
-        stopSectionTextGlitch(true);
-        return;
-      }
-
-      revealIndex += BAZI_SECTION_GLITCH_REVEAL_STEP;
-    }, BAZI_SECTION_GLITCH_STEP_MS);
-  }, [stopSectionTextGlitch]);
-
-  const triggerTextGlitchBySelector = useCallback((selector: string) => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) {
-      return;
-    }
-
-    const targetElement = scrollContainer.querySelector<HTMLElement>(selector);
-    if (!targetElement) {
-      return;
-    }
-
-    startSectionTextGlitch(targetElement);
-  }, [startSectionTextGlitch]);
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -210,20 +143,6 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
   }, []);
 
   useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer || !activeSectionId) {
-      return;
-    }
-
-    const sectionElement = scrollContainer.querySelector<HTMLElement>(`[data-bazi-section-id="${activeSectionId}"]`);
-    if (!sectionElement) {
-      return;
-    }
-
-    startSectionTextGlitch(sectionElement);
-  }, [activeSectionId, startSectionTextGlitch]);
-
-  useEffect(() => {
     if (activeSectionId !== 'network' && activeSectionId !== 'elements') {
       return undefined;
     }
@@ -241,28 +160,6 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
       window.clearTimeout(timeoutId);
     };
   }, [activeSectionId]);
-
-  useEffect(() => (
-    () => {
-      stopSectionTextGlitch(true);
-    }
-  ), [stopSectionTextGlitch]);
-
-  useEffect(() => {
-    if (transitStepScrambleSignal === 0) {
-      return;
-    }
-
-    triggerTextGlitchBySelector('[data-bazi-update-glitch="transit-card"]');
-  }, [transitStepScrambleSignal, triggerTextGlitchBySelector]);
-
-  useEffect(() => {
-    if (almanacStepScrambleSignal === 0) {
-      return;
-    }
-
-    triggerTextGlitchBySelector('[data-bazi-update-glitch="almanac-card"]');
-  }, [almanacStepScrambleSignal, triggerTextGlitchBySelector]);
 
   const baziButtonColor = BAZI_HOME_COLOR_SEQUENCE[baziButtonColorIndex] ?? BAZI_HOME_COLOR_SEQUENCE[0];
   const baziButtonTransitionClass = baziButtonColorIndex > 0 ? 'bazi-color-transition' : '';
@@ -283,7 +180,7 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <main className="bazi-demo bazi-page-shell bazi-overlay-page dark relative h-[100dvh] min-h-[100dvh] overflow-hidden">
+    <div className="bazi-demo bazi-page-shell bazi-overlay-page dark relative h-[100dvh] min-h-[100dvh] overflow-hidden">
       <div className="bazi-demo-grid pointer-events-none absolute inset-0" />
 
       <div className="bazi-fixed-chip bazi-fixed-left absolute z-30">
@@ -312,7 +209,7 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
               onClick={() => {
                 setBaziButtonColorIndex((current) => normalizeColorCycleIndex(current + 1));
               }}
-              ariaLabel="Bā Zì"
+              ariaLabel="Change BaZi preview color"
             >
               <span className="bazi-home-button-stack">
                 <span className="bazi-home-button-line">Bā</span>
@@ -323,6 +220,8 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
             <p className="bazi-intro-text">
               <BaziIntroParagraph />
             </p>
+            <p className="bazi-demo-disclaimer">Interactive UI preview with sample data.</p>
+            <a className="bazi-intro-store-link" href={appStoreUrl} target="_blank" rel="noopener noreferrer">View BaZi Atlas on the App Store ↗</a>
           </div>
         </section>
 
@@ -355,10 +254,11 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
               clearDirectEntry={clearDirectEntry}
               clearPressed={clearPressed}
               setClearPressed={setClearPressed}
-              onOpenPicker={(slot, kind) => setPicker({ slot, kind })}
+              onOpenPicker={(slot, kind, trigger) => { pickerTriggerRef.current = trigger; setPicker({ slot, kind }); }}
             />
 
             <PillarPickerDialog
+              returnFocusRef={pickerTriggerRef}
               picker={picker}
               onClose={() => setPicker(null)}
               onSelect={(index) => {
@@ -426,7 +326,6 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
               <AnnualTransitCard
                 transitIndex={transitIndex}
                 setTransitIndex={setTransitIndex}
-                onStepNavigate={() => setTransitStepScrambleSignal((currentSignal) => currentSignal + 1)}
               />
             </div>
             <BaziDemoDisclaimer />
@@ -443,7 +342,6 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
               <GeneralAlmanacCard
                 index={almanacIndex}
                 setIndex={(next) => setAlmanacIndex(clamp(next, ALMANAC_MIN_INDEX, ALMANAC_MAX_INDEX))}
-                onStepNavigate={() => setAlmanacStepScrambleSignal((currentSignal) => currentSignal + 1)}
               />
             </div>
             <BaziDemoDisclaimer />
@@ -469,6 +367,6 @@ export function BaziOverlayPage({ onClose }: { onClose: () => void }) {
           </div>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

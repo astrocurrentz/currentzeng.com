@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React, { useCallback } from "react";
+import { Modal } from "@/components/modal";
 import {
   BRANCH_OPTIONS,
   ELEMENT_COLORS,
@@ -6,16 +7,23 @@ import {
   STEM_OPTIONS,
   type DirectEntryState,
   type PillarSlot,
-} from '../../selectedWorksData';
-import { SLOT_LABELS } from './constants';
-import type { DirectPickerState, InputMode } from './types';
-import { BaziPressableButton, GanzhiButtonLabel, GlyphSquare, NativeSelect } from './BaziControls';
+} from "../../selectedWorksData";
+import { SLOT_LABELS } from "./constants";
+import type { DirectPickerState, InputMode } from "./types";
+import {
+  BaziPressableButton,
+  GanzhiButtonLabel,
+  GlyphSquare,
+  NativeSelect,
+} from "./BaziControls";
 
 export function PillarPickerDialog({
   picker,
   onClose,
   onSelect,
+  returnFocusRef,
 }: {
+  returnFocusRef: React.RefObject<HTMLElement | null>;
   picker: DirectPickerState;
   onClose: () => void;
   onSelect: (index: number) => void;
@@ -24,16 +32,29 @@ export function PillarPickerDialog({
     return null;
   }
 
-  const options = picker.kind === 'stem' ? STEM_OPTIONS : BRANCH_OPTIONS;
+  const options = picker.kind === "stem" ? STEM_OPTIONS : BRANCH_OPTIONS;
 
   return (
-    <div className="bazi-picker-overlay" onClick={onClose}>
-      <div className="bazi-picker-panel" onClick={(event) => event.stopPropagation()}>
+    <Modal
+      returnFocusRef={returnFocusRef}
+      className="bazi-picker-overlay"
+      onClose={onClose}
+      aria-labelledby="bazi-picker-heading"
+    >
+      <div
+        className="bazi-picker-panel"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="bazi-picker-header">
-          <h4>
-            {picker.kind === 'stem' ? 'Select Stem' : 'Select Branch'} - {SLOT_LABELS[picker.slot]}
+          <h4 id="bazi-picker-heading">
+            {picker.kind === "stem" ? "Select Stem" : "Select Branch"} -{" "}
+            {SLOT_LABELS[picker.slot]}
           </h4>
-          <BaziPressableButton className="bazi-chip bazi-chip-small" onClick={onClose}>
+          <BaziPressableButton
+            className="bazi-chip bazi-chip-small"
+            onClick={onClose}
+            ariaLabel="Close pillar picker"
+          >
             Close
           </BaziPressableButton>
         </div>
@@ -45,7 +66,7 @@ export function PillarPickerDialog({
               className="bazi-picker-glyph"
               style={{
                 backgroundColor: ELEMENT_COLORS[entry.element],
-                color: 'var(--bazi-main-foreground)',
+                color: "var(--bazi-main-foreground)",
               }}
               onClick={() => onSelect(index)}
             >
@@ -59,7 +80,7 @@ export function PillarPickerDialog({
           ))}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -108,18 +129,26 @@ export function BaziInputSection({
   directEntryBirthYear: string;
   setDirectEntryBirthYear: (value: string) => void;
   clearDirectEntry: () => void;
-  onOpenPicker: (slot: PillarSlot, kind: 'stem' | 'branch') => void;
+  onOpenPicker: (
+    slot: PillarSlot,
+    kind: "stem" | "branch",
+    trigger: HTMLElement,
+  ) => void;
   clearPressed: boolean;
   setClearPressed: (pressed: boolean) => void;
 }) {
-  const hourOptions = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, '0'));
-  const minuteOptions = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, '0'));
+  const hourOptions = Array.from({ length: 12 }, (_, index) =>
+    String(index + 1).padStart(2, "0"),
+  );
+  const minuteOptions = Array.from({ length: 60 }, (_, index) =>
+    String(index).padStart(2, "0"),
+  );
 
   const slotStemGlyph = useCallback(
     (slot: PillarSlot) => {
       const index = directEntry[slot].stem;
-      if (index == null) return '';
-      return STEM_OPTIONS[index]?.zh ?? '';
+      if (index == null) return "";
+      return STEM_OPTIONS[index]?.zh ?? "";
     },
     [directEntry],
   );
@@ -127,8 +156,8 @@ export function BaziInputSection({
   const slotBranchGlyph = useCallback(
     (slot: PillarSlot) => {
       const index = directEntry[slot].branch;
-      if (index == null) return '';
-      return BRANCH_OPTIONS[index]?.zh ?? '';
+      if (index == null) return "";
+      return BRANCH_OPTIONS[index]?.zh ?? "";
     },
     [directEntry],
   );
@@ -137,48 +166,93 @@ export function BaziInputSection({
     <div className="bazi-input-shell">
       <div className="bazi-tabs-wrap">
         <BaziPressableButton
-          className={`bazi-tab ${inputMode === 'birthProfile' ? 'is-active' : ''}`}
-          onClick={() => setInputMode('birthProfile')}
+          className={`bazi-tab ${inputMode === "birthProfile" ? "is-active" : ""}`}
+          onClick={() => setInputMode("birthProfile")}
         >
           Birth Input
         </BaziPressableButton>
         <BaziPressableButton
-          className={`bazi-tab ${inputMode === 'directBaZi' ? 'is-active' : ''}`}
-          onClick={() => setInputMode('directBaZi')}
+          className={`bazi-tab ${inputMode === "directBaZi" ? "is-active" : ""}`}
+          onClick={() => setInputMode("directBaZi")}
         >
           Direct BaZi Entry
         </BaziPressableButton>
       </div>
 
-      {inputMode === 'birthProfile' && (
+      {inputMode === "birthProfile" && (
         <div className="bazi-input-stack">
           <div className="bazi-card bazi-subcard">
             <h3 className="bazi-subcard-title">Birth Time</h3>
             <div className="bazi-grid-3">
-              <input className="bazi-input-field" value={birthYear} onChange={(event) => setBirthYear(event.target.value)} placeholder="Year" />
-              <input className="bazi-input-field" value={birthMonth} onChange={(event) => setBirthMonth(event.target.value)} placeholder="Month" />
-              <input className="bazi-input-field" value={birthDay} onChange={(event) => setBirthDay(event.target.value)} placeholder="Day" />
+              <label className="bazi-field-label">
+                Year
+                <input
+                  inputMode="numeric"
+                  className="bazi-input-field"
+                  value={birthYear}
+                  onChange={(event) => setBirthYear(event.target.value)}
+                  placeholder="Year"
+                />
+              </label>
+              <label className="bazi-field-label">
+                Month
+                <input
+                  inputMode="numeric"
+                  className="bazi-input-field"
+                  value={birthMonth}
+                  onChange={(event) => setBirthMonth(event.target.value)}
+                  placeholder="Month"
+                />
+              </label>
+              <label className="bazi-field-label">
+                Day
+                <input
+                  inputMode="numeric"
+                  className="bazi-input-field"
+                  value={birthDay}
+                  onChange={(event) => setBirthDay(event.target.value)}
+                  placeholder="Day"
+                />
+              </label>
             </div>
             <div className="bazi-grid-3 bazi-time-row">
-              <NativeSelect value={birthHour} options={hourOptions} placeholder="Hour" onChange={setBirthHour} />
-              <NativeSelect value={birthMinute} options={minuteOptions} placeholder="Min" onChange={setBirthMinute} />
-              <NativeSelect value={birthPeriod} options={['AM', 'PM']} placeholder="AM/PM" onChange={setBirthPeriod} />
+              <NativeSelect
+                value={birthHour}
+                options={hourOptions}
+                placeholder="Hour"
+                onChange={setBirthHour}
+              />
+              <NativeSelect
+                value={birthMinute}
+                options={minuteOptions}
+                placeholder="Min"
+                onChange={setBirthMinute}
+              />
+              <NativeSelect
+                value={birthPeriod}
+                options={["AM", "PM"]}
+                placeholder="AM/PM"
+                onChange={setBirthPeriod}
+              />
             </div>
           </div>
 
           <div className="bazi-card bazi-subcard">
-            <h3 className="bazi-subcard-title">Birth Place</h3>
-            <input
-              className="bazi-input-field"
-              value={cityQuery}
-              onChange={(event) => setCityQuery(event.target.value)}
-              placeholder="Search city (e.g. Wuhan, Tokyo, New York)"
-            />
+            <h3 className="bazi-subcard-title">Birthplace</h3>
+            <label className="bazi-field-label">
+              City (preview only)
+              <input
+                className="bazi-input-field"
+                value={cityQuery}
+                onChange={(event) => setCityQuery(event.target.value)}
+                placeholder="City (e.g., Wuhan, Tokyo, New York)"
+              />
+            </label>
           </div>
         </div>
       )}
 
-      {inputMode === 'directBaZi' && (
+      {inputMode === "directBaZi" && (
         <div className="bazi-input-stack">
           <div className="bazi-card bazi-subcard">
             <h3 className="bazi-subcard-title">Direct BaZi Entry</h3>
@@ -195,7 +269,9 @@ export function BaziInputSection({
                   glyph={slotStemGlyph(slot)}
                   showPinyin
                   pressed={clearPressed}
-                  onClick={() => onOpenPicker(slot, 'stem')}
+                  onClick={(event) =>
+                    onOpenPicker(slot, "stem", event.currentTarget)
+                  }
                   ariaLabel={`Select stem for ${SLOT_LABELS[slot]}`}
                 />
               ))}
@@ -208,18 +284,26 @@ export function BaziInputSection({
                   glyph={slotBranchGlyph(slot)}
                   showPinyin
                   pressed={clearPressed}
-                  onClick={() => onOpenPicker(slot, 'branch')}
+                  onClick={(event) =>
+                    onOpenPicker(slot, "branch", event.currentTarget)
+                  }
                   ariaLabel={`Select branch for ${SLOT_LABELS[slot]}`}
                 />
               ))}
             </div>
 
-            <input
-              className="bazi-input-field bazi-direct-birth-year"
-              value={directEntryBirthYear}
-              onChange={(event) => setDirectEntryBirthYear(event.target.value)}
-              placeholder="Birth year (optional, for fortune-cycle start year)"
-            />
+            <label className="bazi-field-label">
+              Birth year (optional)
+              <input
+                inputMode="numeric"
+                className="bazi-input-field bazi-direct-birth-year"
+                value={directEntryBirthYear}
+                onChange={(event) =>
+                  setDirectEntryBirthYear(event.target.value)
+                }
+                placeholder="Birth year"
+              />
+            </label>
 
             <div className="bazi-clear-wrap">
               <BaziPressableButton

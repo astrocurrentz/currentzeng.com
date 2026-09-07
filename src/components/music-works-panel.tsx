@@ -13,19 +13,19 @@ type MusicWorksPanelProps = {
 const musicWorks = [
   {
     title: "Freewill's 1st instrumental LP, 2026, WIP",
-    role: "as composer, producer and bassist",
+    role: "Composer, producer, and bassist",
     spotifySrc:
       "https://open.spotify.com/embed/album/4qdheVyhSNhNNinrO6hcmY?utm_source=generator&theme=0&si=1965ba79731e4f19",
   },
   {
     title: "Freewill's 2nd EP, 2024",
-    role: "as composer, producer and bassist",
+    role: "Composer, producer, and bassist",
     spotifySrc:
       "https://open.spotify.com/embed/album/0cw5qqFEUoWosvSBu4jvua?utm_source=generator&theme=0&si=04cedebc55704f76",
   },
   {
-    title: "Personncal Album",
-    role: "as composer, producer, bassist and guitarist",
+    title: "Personal album",
+    role: "Composer, producer, bassist, and guitarist",
     spotifySrc:
       "https://open.spotify.com/embed/album/6rV2szkEw580rRSVjGzR7m?utm_source=generator&theme=0&si=19f2325118c240bc",
   },
