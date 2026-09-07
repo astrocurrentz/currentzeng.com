@@ -14,17 +14,3 @@
 .sizingGuard {
   visibility: hidden;
 }
-
-.text {
-  transition:
-    font-variation-settings 80ms linear,
-    font-weight 80ms linear;
-  will-change: font-variation-settings, font-weight;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .text {
-    transition: none;
-    will-change: auto;
-  }
-}

@@ -53,9 +53,15 @@
 }
 
 .resumeCursorGuide,
+.resumeCursorSquarePosition,
 .resumeCursorSquare {
   position: absolute;
   display: block;
+}
+
+.resumeCursorGuide,
+.resumeCursorSquarePosition {
+  transition: none;
 }
 
 .resumeCursorGuide {
@@ -66,31 +72,32 @@
 .resumeCursorVertical {
   top: 0;
   bottom: 0;
-  left: var(--resume-cursor-x);
+  left: 0;
   width: 1px;
-  transform: translateX(-0.5px);
-  transition: left 80ms linear;
+  will-change: transform;
 }
 
 .resumeCursorHorizontal {
-  top: var(--resume-cursor-y);
+  top: 0;
   right: 0;
   left: 0;
   height: 1px;
-  transform: translateY(-0.5px);
-  transition: top 80ms linear;
+  will-change: transform;
+}
+
+.resumeCursorSquarePosition {
+  top: 0;
+  left: 0;
+  will-change: transform;
 }
 
 .resumeCursorSquare {
-  top: var(--resume-cursor-y);
-  left: var(--resume-cursor-x);
+  top: 0;
+  left: 0;
   width: clamp(0.6rem, 1vw, 0.85rem);
   aspect-ratio: 1;
   background: currentColor;
   transform: translate(-50%, -50%);
-  transition:
-    top 80ms linear,
-    left 80ms linear;
 }
 
 .resumeSection {

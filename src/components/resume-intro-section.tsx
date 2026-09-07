@@ -1,6 +1,7 @@
 "use client";
 
 import { Afacad_Flux } from "next/font/google";
+import { motion } from "motion/react";
 import { useRef } from "react";
 import { SectionScrollButton } from "@/components/section-scroll-button";
 import {
@@ -42,12 +43,8 @@ const resumeTitleFontVariationMapping = {
 
 export function ResumeIntroSection() {
   const trackingRef = useRef<HTMLDivElement>(null);
-  const { isActive, isEnabled, position } =
+  const { cursorX, cursorY, isActive, isEnabled, position } =
     useVariableFontCursor(trackingRef);
-  const cursorStyle = defineCssVars({
-    "--resume-cursor-x": `${position.x * 100}%`,
-    "--resume-cursor-y": `${position.y * 100}%`,
-  });
 
   return (
     <section
@@ -62,22 +59,31 @@ export function ResumeIntroSection() {
         data-cursor-active={isActive}
         data-cursor-enabled={isEnabled}
         ref={trackingRef}
-        style={cursorStyle}
       >
         <span aria-hidden="true" className={styles.resumeCursor}>
-          <span
+          <motion.span
             className={cx(
               styles.resumeCursorGuide,
               styles.resumeCursorVertical,
             )}
+            data-resume-cursor="vertical"
+            style={{ x: cursorX }}
           />
-          <span
+          <motion.span
             className={cx(
               styles.resumeCursorGuide,
               styles.resumeCursorHorizontal,
             )}
+            data-resume-cursor="horizontal"
+            style={{ y: cursorY }}
           />
-          <span className={styles.resumeCursorSquare} />
+          <motion.span
+            className={styles.resumeCursorSquarePosition}
+            data-resume-cursor="square"
+            style={{ x: cursorX, y: cursorY }}
+          >
+            <span className={styles.resumeCursorSquare} />
+          </motion.span>
         </span>
         <h2
           className={cx(styles.resumeIntroTitle, resumeTitleFont.className)}

@@ -6,10 +6,18 @@
  */
 
 import {
+  motion,
+  type MotionValue,
+  useMotionTemplate,
+  useSpring,
+  useTransform,
+} from "motion/react";
+import {
   type CSSProperties,
   type RefObject,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { cx } from "@/lib/class-names";
@@ -26,22 +34,36 @@ export type FontVariationMapping = {
   y: FontVariationAxis;
 };
 
-export type CursorPosition = {
-  x: number;
-  y: number;
+type CursorProgress = {
+  x: MotionValue<number>;
+  y: MotionValue<number>;
 };
 
 type VariableFontAndCursorProps = {
   children: string;
   className?: string;
   fontVariationMapping: FontVariationMapping;
-  position: CursorPosition;
+  position: CursorProgress;
 };
 
-const centerPosition = {
-  x: 0.5,
-  y: 0.5,
-} as const satisfies CursorPosition;
+const centerProgress = 0.5;
+const cursorSpring = {
+  damping: 30,
+  mass: 0.3,
+  stiffness: 700,
+} as const;
+
+type ContainerBounds = {
+  height: number;
+  left: number;
+  top: number;
+  width: number;
+};
+
+type PointerCoordinates = {
+  clientX: number;
+  clientY: number;
+};
 
 function clamp(value: number) {
   return Math.min(Math.max(value, 0), 1);
@@ -51,61 +73,27 @@ function interpolate(axis: FontVariationAxis, progress: number) {
   return axis.min + (axis.max - axis.min) * progress;
 }
 
-function getAxisValues(
+function getSizingGuardStyle(
   fontVariationMapping: FontVariationMapping,
-  position: CursorPosition,
-) {
-  return [
-    {
-      name: fontVariationMapping.x.name,
-      value: interpolate(fontVariationMapping.x, position.x),
-    },
-    {
-      name: fontVariationMapping.y.name,
-      value: interpolate(fontVariationMapping.y, position.y),
-    },
-  ];
-}
-
-function getFontVariationSettings(
-  fontVariationMapping: FontVariationMapping,
-  position: CursorPosition,
-) {
-  return getAxisValues(fontVariationMapping, position)
-    .map(({ name, value }) => `'${name}' ${Math.round(value)}`)
-    .join(", ");
-}
-
-function getFontWeight(
-  fontVariationMapping: FontVariationMapping,
-  position: CursorPosition,
-) {
-  return getAxisValues(fontVariationMapping, position).find(
-    ({ name }) => name === "wght",
-  )?.value;
-}
-
-function getFontStyle(
-  fontVariationMapping: FontVariationMapping,
-  position: CursorPosition,
 ): CSSProperties {
-  const fontWeight = getFontWeight(fontVariationMapping, position);
+  const { x, y } = fontVariationMapping;
 
   return {
-    fontVariationSettings: getFontVariationSettings(
-      fontVariationMapping,
-      position,
-    ),
-    fontWeight: fontWeight ? Math.round(fontWeight) : undefined,
+    fontVariationSettings: `'${x.name}' ${x.max}, '${y.name}' ${y.max}`,
   };
 }
 
 export function useVariableFontCursor<T extends HTMLElement>(
   containerRef: RefObject<T | null>,
 ) {
-  const [position, setPosition] = useState<CursorPosition>(centerPosition);
+  const progressX = useSpring(centerProgress, cursorSpring);
+  const progressY = useSpring(centerProgress, cursorSpring);
+  const cursorX = useSpring(0, cursorSpring);
+  const cursorY = useSpring(0, cursorSpring);
   const [isActive, setIsActive] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
+  const isActiveRef = useRef(false);
+  const isEnabledRef = useRef(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -120,77 +108,152 @@ export function useVariableFontCursor<T extends HTMLElement>(
     const reducedMotionQuery = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     );
-    let animationFrame: number | null = null;
+    let bounds: ContainerBounds | null = null;
+    let hasMeasured = false;
+    let lastPointer: PointerCoordinates | null = null;
 
-    const setCursorPosition = (nextPosition: CursorPosition) => {
-      if (animationFrame !== null) {
-        window.cancelAnimationFrame(animationFrame);
+    const setActive = (nextIsActive: boolean) => {
+      if (isActiveRef.current === nextIsActive) {
+        return;
       }
 
-      animationFrame = window.requestAnimationFrame(() => {
-        setPosition(nextPosition);
-        animationFrame = null;
-      });
+      isActiveRef.current = nextIsActive;
+      setIsActive(nextIsActive);
     };
 
-    const resetPosition = () => {
-      setIsActive(false);
-      setCursorPosition(centerPosition);
+    const setPositionFromPointer = ({
+      clientX,
+      clientY,
+    }: PointerCoordinates) => {
+      if (!bounds || bounds.width === 0 || bounds.height === 0) {
+        return;
+      }
+
+      const x = clamp((clientX - bounds.left) / bounds.width);
+      const y = clamp((clientY - bounds.top) / bounds.height);
+
+      progressX.set(x);
+      progressY.set(y);
+      cursorX.set(x * bounds.width);
+      cursorY.set(y * bounds.height);
+    };
+
+    const centerCursor = (immediate = false) => {
+      const centerX = (bounds?.width ?? 0) * centerProgress;
+      const centerY = (bounds?.height ?? 0) * centerProgress;
+
+      progressX.set(centerProgress);
+      progressY.set(centerProgress);
+      cursorX.set(centerX);
+      cursorY.set(centerY);
+
+      if (immediate) {
+        progressX.jump(centerProgress);
+        progressY.jump(centerProgress);
+        cursorX.jump(centerX);
+        cursorY.jump(centerY);
+      }
+    };
+
+    const measureContainer = () => {
+      const rect = container.getBoundingClientRect();
+
+      bounds = {
+        height: rect.height,
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+      };
+
+      if (!hasMeasured) {
+        hasMeasured = true;
+        centerCursor(true);
+      } else if (isActiveRef.current && lastPointer) {
+        setPositionFromPointer(lastPointer);
+      } else {
+        centerCursor();
+      }
+    };
+
+    const resetPosition = (immediate = false) => {
+      lastPointer = null;
+      setActive(false);
+      centerCursor(immediate);
     };
 
     const handlePointerPosition = (event: PointerEvent) => {
-      if (!finePointerQuery.matches || reducedMotionQuery.matches) {
+      if (!isEnabledRef.current) {
         return;
       }
 
-      const rect = container.getBoundingClientRect();
+      lastPointer = {
+        clientX: event.clientX,
+        clientY: event.clientY,
+      };
+      setActive(true);
+      setPositionFromPointer(lastPointer);
+    };
 
-      if (rect.width === 0 || rect.height === 0) {
-        return;
-      }
+    const handlePointerEnter = (event: PointerEvent) => {
+      measureContainer();
+      handlePointerPosition(event);
+    };
 
-      setIsActive(true);
-      setCursorPosition({
-        x: clamp((event.clientX - rect.left) / rect.width),
-        y: clamp((event.clientY - rect.top) / rect.height),
-      });
+    const handlePointerLeave = () => {
+      resetPosition();
     };
 
     const syncCursorCapability = () => {
       const nextIsEnabled =
         finePointerQuery.matches && !reducedMotionQuery.matches;
 
-      setIsEnabled(nextIsEnabled);
+      if (isEnabledRef.current !== nextIsEnabled) {
+        isEnabledRef.current = nextIsEnabled;
+        setIsEnabled(nextIsEnabled);
+      }
 
       if (!nextIsEnabled) {
-        resetPosition();
+        resetPosition(true);
       }
     };
 
+    measureContainer();
     syncCursorCapability();
-    container.addEventListener("pointerenter", handlePointerPosition);
-    container.addEventListener("pointermove", handlePointerPosition);
-    container.addEventListener("pointerleave", resetPosition);
+    const resizeObserver = new ResizeObserver(measureContainer);
+    resizeObserver.observe(container);
+    container.addEventListener("pointerenter", handlePointerEnter);
+    container.addEventListener("pointermove", handlePointerPosition, {
+      passive: true,
+    });
+    container.addEventListener("pointerleave", handlePointerLeave);
     finePointerQuery.addEventListener("change", syncCursorCapability);
     reducedMotionQuery.addEventListener("change", syncCursorCapability);
 
     return () => {
-      if (animationFrame !== null) {
-        window.cancelAnimationFrame(animationFrame);
-      }
-
-      container.removeEventListener("pointerenter", handlePointerPosition);
+      resizeObserver.disconnect();
+      container.removeEventListener("pointerenter", handlePointerEnter);
       container.removeEventListener("pointermove", handlePointerPosition);
-      container.removeEventListener("pointerleave", resetPosition);
+      container.removeEventListener("pointerleave", handlePointerLeave);
       finePointerQuery.removeEventListener("change", syncCursorCapability);
       reducedMotionQuery.removeEventListener("change", syncCursorCapability);
     };
-  }, [containerRef]);
+  }, [
+    containerRef,
+    cursorX,
+    cursorY,
+    progressX,
+    progressY,
+  ]);
 
   return {
+    cursorX,
+    cursorY,
     isActive,
     isEnabled,
-    position,
+    position: {
+      x: progressX,
+      y: progressY,
+    },
   };
 }
 
@@ -200,13 +263,15 @@ export function VariableFontAndCursor({
   fontVariationMapping,
   position,
 }: VariableFontAndCursorProps) {
-  const fontStyle = useMemo(
-    () => getFontStyle(fontVariationMapping, position),
-    [fontVariationMapping, position],
+  const xAxis = useTransform(position.x, (value) =>
+    interpolate(fontVariationMapping.x, value),
   );
-
+  const yAxis = useTransform(position.y, (value) =>
+    interpolate(fontVariationMapping.y, value),
+  );
+  const fontVariationSettings = useMotionTemplate`'${fontVariationMapping.x.name}' ${xAxis}, '${fontVariationMapping.y.name}' ${yAxis}`;
   const sizingGuardStyle = useMemo(
-    () => getFontStyle(fontVariationMapping, { x: 1, y: 1 }),
+    () => getSizingGuardStyle(fontVariationMapping),
     [fontVariationMapping],
   );
 
@@ -219,9 +284,13 @@ export function VariableFontAndCursor({
       >
         {children}
       </span>
-      <span className={styles.text} style={fontStyle}>
+      <motion.span
+        className={styles.text}
+        data-variable-font-text
+        style={{ fontVariationSettings }}
+      >
         {children}
-      </span>
+      </motion.span>
     </span>
   );
 }

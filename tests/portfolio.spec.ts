@@ -238,6 +238,120 @@ test("all résumé downloads and the viewer use one working PDF", async ({
   ).toBeVisible();
 });
 
+test("résumé hover follows the pointer without shifting layout", async ({
+  isMobile,
+  page,
+}) => {
+  test.skip(isMobile, "The custom résumé cursor is desktop-only.");
+
+  await page.goto("/#resume-intro");
+  const section = page.locator("#resume-intro");
+  const tracking = section.locator("[data-cursor-enabled]");
+  const title = section.locator("#resume-intro-heading");
+  const text = section.locator("[data-variable-font-text]");
+  const verticalGuide = section.locator(
+    '[data-resume-cursor="vertical"]',
+  );
+  const square = section.locator('[data-resume-cursor="square"]');
+
+  await expect(tracking).toHaveAttribute("data-cursor-enabled", "true");
+  const trackingBox = await tracking.boundingBox();
+  const sectionBoxBefore = await section.boundingBox();
+  const titleBoxBefore = await title.boundingBox();
+  const initialFontSettings = await text.evaluate(
+    (element) => getComputedStyle(element).fontVariationSettings,
+  );
+  const initialGuideTransform = await verticalGuide.evaluate(
+    (element) => getComputedStyle(element).transform,
+  );
+
+  expect(trackingBox).not.toBeNull();
+  await page.mouse.move(
+    trackingBox!.x + trackingBox!.width * 0.15,
+    trackingBox!.y + trackingBox!.height * 0.2,
+  );
+
+  await expect(tracking).toHaveAttribute("data-cursor-active", "true");
+  await expect.poll(
+    () =>
+      verticalGuide.evaluate(
+        (element) => getComputedStyle(element).transform,
+      ),
+  ).not.toBe(initialGuideTransform);
+  await expect.poll(
+    () =>
+      text.evaluate(
+        (element) => getComputedStyle(element).fontVariationSettings,
+      ),
+  ).not.toBe(initialFontSettings);
+  await expect(verticalGuide).toHaveCSS("left", "0px");
+  await expect(verticalGuide).toHaveCSS("transition-property", "none");
+  await expect(square).toHaveCSS("left", "0px");
+  await expect(square).toHaveCSS("transition-property", "none");
+
+  const sectionBoxAfter = await section.boundingBox();
+  const titleBoxAfter = await title.boundingBox();
+
+  for (const property of ["x", "y", "width", "height"] as const) {
+    expect(sectionBoxAfter?.[property]).toBeCloseTo(
+      sectionBoxBefore![property],
+      1,
+    );
+    expect(titleBoxAfter?.[property]).toBeCloseTo(
+      titleBoxBefore![property],
+      1,
+    );
+  }
+
+  await tracking.dispatchEvent("pointerleave", { pointerType: "mouse" });
+  await expect(tracking).toHaveAttribute("data-cursor-active", "false");
+  await expect.poll(
+    () =>
+      text.evaluate(
+        (element) => getComputedStyle(element).fontVariationSettings,
+      ),
+  ).toBe(initialFontSettings);
+});
+
+test("résumé hover remains static for reduced motion and coarse pointers", async ({
+  isMobile,
+  page,
+}) => {
+  if (!isMobile) {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+  }
+
+  await page.goto("/#resume-intro");
+  const section = page.locator("#resume-intro");
+  const tracking = section.locator("[data-cursor-enabled]");
+  const cursor = section.locator('[aria-hidden="true"]').first();
+  const text = section.locator("[data-variable-font-text]");
+  const trackingBox = await tracking.boundingBox();
+  const initialFontSettings = await text.evaluate(
+    (element) => getComputedStyle(element).fontVariationSettings,
+  );
+
+  expect(trackingBox).not.toBeNull();
+  await expect(tracking).toHaveAttribute("data-cursor-enabled", "false");
+  await expect(tracking).not.toHaveCSS("cursor", "none");
+  await page.mouse.move(
+    trackingBox!.x + trackingBox!.width * 0.15,
+    trackingBox!.y + trackingBox!.height * 0.2,
+  );
+  await page.waitForTimeout(150);
+
+  await expect(tracking).toHaveAttribute("data-cursor-active", "false");
+  expect(
+    await text.evaluate(
+      (element) => getComputedStyle(element).fontVariationSettings,
+    ),
+  ).toBe(initialFontSettings);
+  await expect(cursor).toHaveCSS(
+    isMobile ? "opacity" : "display",
+    isMobile ? "0" : "none",
+  );
+});
+
 test("BaZi modal contains focus, labels inputs, and restores its trigger", async ({
   page,
 }) => {
