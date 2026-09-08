@@ -29,6 +29,7 @@ const menuSectionIds = new Set<ScrollTargetId>([
 ]);
 const menuGapPx = 16;
 const scrollTolerancePx = 1;
+const contactReleaseDistancePx = 16;
 const settledFrameCount = 2;
 const maximumScrollDurationMs = 2400;
 
@@ -74,8 +75,10 @@ export function PortfolioNavigation() {
       }
 
       cancelActiveScrollRef.current?.();
+      delete scrollRoot.dataset.contactAnchored;
       scrollRoot.scrollTo({ behavior: "auto", top: scrollRoot.scrollTop });
       scrollRoot.dataset.menuScrolling = "true";
+      scrollRoot.dataset.menuScrollTarget = sectionId;
 
       const rootRect = scrollRoot.getBoundingClientRect();
       const targetRect = target.getBoundingClientRect();
@@ -84,7 +87,7 @@ export function PortfolioNavigation() {
       let maximumTop = scrollRoot.scrollHeight - scrollRoot.clientHeight;
       let destinationTop = naturalTargetTop;
 
-      if (sectionId === "engineering" || sectionId === "resume") {
+      if (sectionId === "engineering") {
         const navigationBottom =
           navigationRef.current?.getBoundingClientRect().bottom ?? rootRect.top;
         const menuClearance = navigationBottom - rootRect.top + menuGapPx;
@@ -112,7 +115,7 @@ export function PortfolioNavigation() {
         scrollRoot.removeEventListener("wheel", handleUserInterruption);
       };
 
-      const finish = (focusTarget: boolean) => {
+      const finish = (focusTarget: boolean, anchorContact = false) => {
         if (isFinished) {
           return;
         }
@@ -120,7 +123,17 @@ export function PortfolioNavigation() {
         isFinished = true;
         window.cancelAnimationFrame(animationFrame);
         removeInterruptionListeners();
+
+        if (anchorContact) {
+          scrollRoot.dataset.contactAnchored = "true";
+          scrollRoot.scrollTo({
+            behavior: "auto",
+            top: scrollRoot.scrollHeight - scrollRoot.clientHeight,
+          });
+        }
+
         delete scrollRoot.dataset.menuScrolling;
+        delete scrollRoot.dataset.menuScrollTarget;
 
         if (cancelActiveScrollRef.current === cancel) {
           cancelActiveScrollRef.current = null;
@@ -133,7 +146,7 @@ export function PortfolioNavigation() {
 
       const cancel = () => {
         scrollRoot.scrollTo({ behavior: "auto", top: scrollRoot.scrollTop });
-        finish(false);
+        finish(false, false);
       };
 
       function handleUserInterruption() {
@@ -167,13 +180,13 @@ export function PortfolioNavigation() {
           hasReachedTarget && hasStoppedMoving ? stableFrames + 1 : 0;
 
         if (stableFrames >= settledFrameCount) {
-          finish(options.focusTarget);
+          finish(options.focusTarget, sectionId === "contact");
           return;
         }
 
         if (now - startedAt >= maximumScrollDurationMs) {
           scrollRoot.scrollTo({ behavior: "auto", top: destinationTop });
-          finish(options.focusTarget);
+          finish(options.focusTarget, sectionId === "contact");
           return;
         }
 
@@ -192,7 +205,9 @@ export function PortfolioNavigation() {
         passive: true,
       });
       // Apply the temporary snap override before starting the browser animation.
-      window.getComputedStyle(scrollRoot).scrollSnapType;
+      window
+        .getComputedStyle(scrollRoot)
+        .getPropertyValue("scroll-snap-type");
       scrollRoot.scrollTo({ behavior: options.behavior, top: destinationTop });
       animationFrame = window.requestAnimationFrame(trackScroll);
 
@@ -228,8 +243,46 @@ export function PortfolioNavigation() {
 
   useEffect(() => {
     const initialTarget = getHashTarget();
+    const scrollRoot = document.querySelector<HTMLElement>(
+      "[data-section-scroll-root]",
+    );
     let historyFrame = 0;
     let initialFrame = 0;
+
+    const releaseContactAnchor = () => {
+      if (scrollRoot?.dataset.contactAnchored !== "true") {
+        return;
+      }
+
+      const maximumTop = scrollRoot.scrollHeight - scrollRoot.clientHeight;
+
+      if (
+        Math.abs(maximumTop - scrollRoot.scrollTop) >
+        contactReleaseDistancePx
+      ) {
+        delete scrollRoot.dataset.contactAnchored;
+      }
+    };
+
+    const keepContactAtDocumentEnd = () => {
+      if (scrollRoot?.dataset.contactAnchored !== "true") {
+        return;
+      }
+
+      scrollRoot.scrollTo({
+        behavior: "auto",
+        top: scrollRoot.scrollHeight - scrollRoot.clientHeight,
+      });
+    };
+
+    const resizeObserver = new ResizeObserver(keepContactAtDocumentEnd);
+
+    if (scrollRoot) {
+      resizeObserver.observe(scrollRoot);
+      for (const child of scrollRoot.children) {
+        resizeObserver.observe(child);
+      }
+    }
 
     if (initialTarget) {
       initialFrame = window.requestAnimationFrame(() => {
@@ -253,11 +306,20 @@ export function PortfolioNavigation() {
     };
 
     window.addEventListener("popstate", handlePopState);
+    scrollRoot?.addEventListener("scroll", releaseContactAnchor, {
+      passive: true,
+    });
 
     return () => {
       window.cancelAnimationFrame(initialFrame);
       window.cancelAnimationFrame(historyFrame);
+      resizeObserver.disconnect();
       window.removeEventListener("popstate", handlePopState);
+      scrollRoot?.removeEventListener("scroll", releaseContactAnchor);
+      if (scrollRoot) {
+        delete scrollRoot.dataset.contactAnchored;
+        delete scrollRoot.dataset.menuScrollTarget;
+      }
       cancelActiveScrollRef.current?.();
     };
   }, [scrollToSection]);

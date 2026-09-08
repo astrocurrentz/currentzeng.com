@@ -59,23 +59,30 @@ async function expectTextSectionAlignment(page: Page, sectionId: string) {
 }
 
 async function expectContactAlignment(page: Page) {
-  await expect
-    .poll(
-      () =>
-        page.locator(scrollRootSelector).evaluate((scrollRoot) =>
-          Math.abs(
-            scrollRoot.scrollHeight -
-              scrollRoot.clientHeight -
-              scrollRoot.scrollTop,
-          ),
-        ),
-      { timeout: 4000 },
-    )
-    .toBeLessThanOrEqual(2);
+  const remainingScrollDistance = () =>
+    page.locator(scrollRootSelector).evaluate((scrollRoot) =>
+      Math.abs(
+        scrollRoot.scrollHeight -
+          scrollRoot.clientHeight -
+          scrollRoot.scrollTop,
+      ),
+    );
+
+  await expect.poll(remainingScrollDistance, { timeout: 4000 }).toBeLessThanOrEqual(2);
   await expect(page.locator(scrollRootSelector)).not.toHaveAttribute(
     "data-menu-scrolling",
     "true",
   );
+  await expect(page.locator(scrollRootSelector)).toHaveAttribute(
+    "data-contact-anchored",
+    "true",
+  );
+  await expect(page.locator("#resume")).toHaveAttribute(
+    "data-resume-state",
+    "content",
+  );
+  await page.waitForTimeout(1200);
+  await expect.poll(remainingScrollDistance).toBeLessThanOrEqual(2);
 }
 
 async function openBazi(page: Page) {
@@ -120,7 +127,7 @@ test("landing navigation and direct engineering links expose real experience", a
     page.getByRole("heading", { name: "QA automation & diagnostics" }),
   ).toBeVisible();
   await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
-  await expectTextSectionAlignment(page, "resume");
+  await expectFlushAlignment(page, "resume");
   await expect(page.locator("#resume")).toHaveAttribute(
     "data-resume-state",
     "hero",
@@ -166,19 +173,25 @@ test("Creative work reaches the viewport top with one click from a stale hash", 
   await expect(page).toHaveURL(/#area$/);
 });
 
-test("a new menu selection cancels and retargets an active scroll", async ({
+test("a new menu selection cancels and retargets an active Contact scroll", async ({
   page,
 }) => {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.goto("/#resume", { waitUntil: "domcontentloaded" });
   const navigation = page.getByRole("navigation", { name: "Portfolio" });
+  const resume = page.locator("#resume");
 
+  await expect(resume).toHaveAttribute("data-resume-state", "hero");
+  await navigation.getByRole("link", { name: "Contact", exact: true }).click();
+  await expect(resume).toHaveAttribute("data-resume-state", "content");
   await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
-  await navigation
-    .getByRole("link", { name: "Creative work", exact: true })
-    .click();
 
-  await expectFlushAlignment(page, "area");
-  await expect(page).toHaveURL(/#area$/);
+  await expectFlushAlignment(page, "resume");
+  await expect(resume).toHaveAttribute("data-resume-state", "hero");
+  await expect(page.locator(scrollRootSelector)).not.toHaveAttribute(
+    "data-menu-scroll-target",
+    /.+/,
+  );
+  await expect(page).toHaveURL(/#resume$/);
 });
 
 test("menu history restores earlier sections and the landing page", async ({
@@ -192,7 +205,7 @@ test("menu history restores earlier sections and the landing page", async ({
     .click();
   await expectTextSectionAlignment(page, "engineering");
   await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
-  await expectTextSectionAlignment(page, "resume");
+  await expectFlushAlignment(page, "resume");
 
   await page.goBack({ waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/#engineering$/);
@@ -200,6 +213,51 @@ test("menu history restores earlier sections and the landing page", async ({
   await page.goBack({ waitUntil: "domcontentloaded" });
   await expect(page).not.toHaveURL(/#/);
   await expectFlushAlignment(page, "landing");
+});
+
+test("Contact direct links and history remain anchored until manual scrolling", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#contact", { waitUntil: "domcontentloaded" });
+  await expectContactAlignment(page);
+
+  await page
+    .getByRole("navigation", { name: "Portfolio" })
+    .getByRole("link", { name: "Engineering", exact: true })
+    .click();
+  await expectTextSectionAlignment(page, "engineering");
+  await page
+    .getByRole("navigation", { name: "Portfolio" })
+    .getByRole("link", { name: "Contact", exact: true })
+    .click();
+  await expectContactAlignment(page);
+
+  await page.goBack({ waitUntil: "domcontentloaded" });
+  await expect(page).toHaveURL(/#engineering$/);
+  await expectTextSectionAlignment(page, "engineering");
+  await page.goForward({ waitUntil: "domcontentloaded" });
+  await expect(page).toHaveURL(/#contact$/);
+  await expectContactAlignment(page);
+
+  await page
+    .getByRole("navigation", { name: "Portfolio" })
+    .getByRole("link", { name: "Creative work", exact: true })
+    .click();
+  await expectFlushAlignment(page, "area");
+  await page
+    .getByRole("navigation", { name: "Portfolio" })
+    .getByRole("link", { name: "Contact", exact: true })
+    .click();
+  await expectContactAlignment(page);
+
+  await page.locator(scrollRootSelector).evaluate((scrollRoot) => {
+    scrollRoot.scrollBy({ behavior: "auto", top: -64 });
+  });
+  await expect(page.locator(scrollRootSelector)).not.toHaveAttribute(
+    "data-contact-anchored",
+    "true",
+  );
 });
 
 test("keyboard menu activation focuses the target without animation", async ({

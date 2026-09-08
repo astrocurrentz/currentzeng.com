@@ -75,6 +75,27 @@
   min-width: 7.5rem;
 }
 
+@media (min-width: 768px) {
+  .navigation {
+    left: 50%;
+    right: auto;
+    width: max-content;
+    transform: translateX(-50%);
+  }
+
+  .linkList {
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: clamp(2rem, 4vw, 5rem);
+  }
+
+  .phoneControl {
+    min-width: 0;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 767px) {
   .navigation {
     top: max(1.25rem, calc(env(safe-area-inset-top) + 1.25rem));

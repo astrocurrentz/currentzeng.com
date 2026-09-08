@@ -3,7 +3,6 @@
 import { Afacad_Flux } from "next/font/google";
 import { motion } from "motion/react";
 import {
-  type PointerEvent as ReactPointerEvent,
   useCallback,
   useEffect,
   useRef,
@@ -47,16 +46,10 @@ const resumeTitleFontVariationMapping = {
   },
 } as const satisfies FontVariationMapping;
 
-const pointerMovementTarget = 3;
-const revealFallbackDelayMs = 2500;
+const revealDelayMs = 2500;
 const revealTransitionDurationMs = 400;
 
 type ResumeRevealState = "hero" | "transitioning" | "content";
-
-type PointerCoordinates = {
-  x: number;
-  y: number;
-};
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -66,13 +59,13 @@ export function ResumeSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const trackingRef = useRef<HTMLDivElement>(null);
   const revealStateRef = useRef<ResumeRevealState>("hero");
-  const movementCountRef = useRef(0);
-  const queuedPointerRef = useRef<PointerCoordinates | null>(null);
-  const lastPointerRef = useRef<PointerCoordinates | null>(null);
-  const movementFrameRef = useRef<number | null>(null);
-  const fallbackTimerRef = useRef<number | null>(null);
+  const revealTimerRef = useRef<number | null>(null);
   const transitionTimerRef = useRef<number | null>(null);
+  const scrollFrameRef = useRef<number | null>(null);
+  const previousResumeTopRef = useRef<number | null>(null);
+  const previousScrollTopRef = useRef<number | null>(null);
   const isInResumeBandRef = useRef(false);
+  const isSuppressingForContactRef = useRef(false);
   const [revealState, setRevealState] =
     useState<ResumeRevealState>("hero");
   const { cursorX, cursorY, isActive, isEnabled, position } =
@@ -83,13 +76,13 @@ export function ResumeSection() {
     setRevealState(nextState);
   }, []);
 
-  const clearFallbackTimer = useCallback(() => {
-    if (fallbackTimerRef.current === null) {
+  const clearRevealTimer = useCallback(() => {
+    if (revealTimerRef.current === null) {
       return;
     }
 
-    window.clearTimeout(fallbackTimerRef.current);
-    fallbackTimerRef.current = null;
+    window.clearTimeout(revealTimerRef.current);
+    revealTimerRef.current = null;
   }, []);
 
   const clearTransitionTimer = useCallback(() => {
@@ -101,21 +94,12 @@ export function ResumeSection() {
     transitionTimerRef.current = null;
   }, []);
 
-  const clearMovementFrame = useCallback(() => {
-    if (movementFrameRef.current === null) {
-      return;
-    }
-
-    window.cancelAnimationFrame(movementFrameRef.current);
-    movementFrameRef.current = null;
-  }, []);
-
   const beginReveal = useCallback(() => {
     if (revealStateRef.current !== "hero") {
       return;
     }
 
-    clearFallbackTimer();
+    clearRevealTimer();
     clearTransitionTimer();
 
     if (prefersReducedMotion()) {
@@ -128,32 +112,33 @@ export function ResumeSection() {
       transitionTimerRef.current = null;
       updateRevealState("content");
     }, revealTransitionDurationMs);
-  }, [clearFallbackTimer, clearTransitionTimer, updateRevealState]);
+  }, [clearRevealTimer, clearTransitionTimer, updateRevealState]);
 
-  const scheduleFallbackReveal = useCallback(() => {
-    clearFallbackTimer();
-    fallbackTimerRef.current = window.setTimeout(() => {
-      fallbackTimerRef.current = null;
+  const scheduleReveal = useCallback(() => {
+    clearRevealTimer();
+    revealTimerRef.current = window.setTimeout(() => {
+      revealTimerRef.current = null;
       beginReveal();
-    }, revealFallbackDelayMs);
-  }, [beginReveal, clearFallbackTimer]);
+    }, revealDelayMs);
+  }, [beginReveal, clearRevealTimer]);
 
   const resetForEntry = useCallback(() => {
-    clearFallbackTimer();
+    clearRevealTimer();
     clearTransitionTimer();
-    clearMovementFrame();
-    movementCountRef.current = 0;
-    queuedPointerRef.current = null;
-    lastPointerRef.current = null;
     updateRevealState("hero");
-    scheduleFallbackReveal();
+    scheduleReveal();
   }, [
-    clearFallbackTimer,
-    clearMovementFrame,
+    clearRevealTimer,
     clearTransitionTimer,
-    scheduleFallbackReveal,
+    scheduleReveal,
     updateRevealState,
   ]);
+
+  const showContentWithoutReveal = useCallback(() => {
+    clearRevealTimer();
+    clearTransitionTimer();
+    updateRevealState("content");
+  }, [clearRevealTimer, clearTransitionTimer, updateRevealState]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -165,83 +150,167 @@ export function ResumeSection() {
       return;
     }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isInResumeBandRef.current) {
-          isInResumeBandRef.current = true;
-          section.dataset.resumeEntryActive = "true";
-          resetForEntry();
-          return;
-        }
+    const readPosition = () => {
+      const rootRect = scrollRoot.getBoundingClientRect();
+      const sectionRect = section.getBoundingClientRect();
+      const entryBandTop = rootRect.top;
+      const entryBandBottom = rootRect.top + rootRect.height * 0.25;
 
-        if (!entry.isIntersecting && isInResumeBandRef.current) {
-          isInResumeBandRef.current = false;
-          delete section.dataset.resumeEntryActive;
-          clearFallbackTimer();
-          clearTransitionTimer();
-          clearMovementFrame();
-        }
-      },
-      {
-        root: scrollRoot,
-        rootMargin: "0px 0px -75% 0px",
-        threshold: 0,
-      },
-    );
+      return {
+        entryBandBottom,
+        entryBandTop,
+        isSectionVisible:
+          sectionRect.bottom > rootRect.top &&
+          sectionRect.top < rootRect.bottom,
+        isTopInBand:
+          sectionRect.top >= entryBandTop &&
+          sectionRect.top <= entryBandBottom,
+        resumeTop: sectionRect.top,
+        scrollTop: scrollRoot.scrollTop,
+      };
+    };
 
-    observer.observe(section);
+    const activateEntry = () => {
+      isInResumeBandRef.current = true;
+      section.dataset.resumeEntryActive = "true";
+      resetForEntry();
+    };
 
-    return () => {
-      observer.disconnect();
-      delete section.dataset.resumeEntryActive;
+    const deactivateEntry = () => {
       isInResumeBandRef.current = false;
-      clearFallbackTimer();
+      delete section.dataset.resumeEntryActive;
+      clearRevealTimer();
       clearTransitionTimer();
-      clearMovementFrame();
-    };
-  }, [
-    clearFallbackTimer,
-    clearMovementFrame,
-    clearTransitionTimer,
-    resetForEntry,
-  ]);
-
-  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (!isEnabled || revealStateRef.current !== "hero") {
-      return;
-    }
-
-    queuedPointerRef.current = {
-      x: event.clientX,
-      y: event.clientY,
+      updateRevealState("hero");
     };
 
-    if (movementFrameRef.current !== null) {
-      return;
-    }
+    const suppressForContact = () => {
+      isSuppressingForContactRef.current = true;
+      isInResumeBandRef.current = false;
+      delete section.dataset.resumeEntryActive;
+      showContentWithoutReveal();
+    };
 
-    movementFrameRef.current = window.requestAnimationFrame(() => {
-      movementFrameRef.current = null;
-      const nextPointer = queuedPointerRef.current;
-      const previousPointer = lastPointerRef.current;
+    const processScrollPosition = () => {
+      scrollFrameRef.current = null;
 
-      if (
-        !nextPointer ||
-        (previousPointer?.x === nextPointer.x &&
-          previousPointer.y === nextPointer.y)
-      ) {
+      const position = readPosition();
+      const previousTop = previousResumeTopRef.current;
+      const previousScrollTop = previousScrollTopRef.current;
+      const isContactNavigation =
+        scrollRoot.dataset.menuScrollTarget === "contact";
+      const isContactAnchored =
+        scrollRoot.dataset.contactAnchored === "true";
+
+      if (isContactNavigation || isContactAnchored) {
+        suppressForContact();
+        previousResumeTopRef.current = position.resumeTop;
+        previousScrollTopRef.current = position.scrollTop;
         return;
       }
 
-      lastPointerRef.current = nextPointer;
-      movementCountRef.current += 1;
-      scheduleFallbackReveal();
+      const suppressionEnded = isSuppressingForContactRef.current;
+      isSuppressingForContactRef.current = false;
 
-      if (movementCountRef.current >= pointerMovementTarget) {
-        beginReveal();
+      const enteredBand =
+        position.isTopInBand &&
+        (previousTop === null ||
+          previousTop < position.entryBandTop ||
+          previousTop > position.entryBandBottom);
+      const crossedBandDownward =
+        previousTop !== null &&
+        previousTop > position.entryBandBottom &&
+        position.resumeTop < position.entryBandTop;
+      const initializedWithinResume =
+        previousTop === null && position.isSectionVisible;
+      const interruptedContactWithinResume =
+        suppressionEnded && position.isSectionVisible;
+      const backedOutUpward =
+        previousScrollTop !== null &&
+        position.scrollTop < previousScrollTop - 1 &&
+        position.resumeTop > position.entryBandBottom;
+
+      if (
+        enteredBand ||
+        crossedBandDownward ||
+        initializedWithinResume ||
+        interruptedContactWithinResume
+      ) {
+        activateEntry();
+      } else if (backedOutUpward) {
+        // Only backing out toward earlier sections cancels an active entry.
+        // A downward overshoot keeps the timer alive so the hero cannot stick.
+        deactivateEntry();
       }
+
+      previousResumeTopRef.current = position.resumeTop;
+      previousScrollTopRef.current = position.scrollTop;
+    };
+
+    const schedulePositionCheck = () => {
+      if (scrollFrameRef.current !== null) {
+        return;
+      }
+
+      scrollFrameRef.current = window.requestAnimationFrame(
+        processScrollPosition,
+      );
+    };
+
+    const synchronizeNavigationTarget = () => {
+      if (
+        scrollRoot.dataset.menuScrollTarget === "contact" ||
+        scrollRoot.dataset.contactAnchored === "true"
+      ) {
+        suppressForContact();
+        const position = readPosition();
+        previousResumeTopRef.current = position.resumeTop;
+        previousScrollTopRef.current = position.scrollTop;
+        return;
+      }
+
+      processScrollPosition();
+    };
+
+    const navigationObserver = new MutationObserver(
+      synchronizeNavigationTarget,
+    );
+
+    scrollRoot.addEventListener("scroll", schedulePositionCheck, {
+      passive: true,
     });
-  };
+    navigationObserver.observe(scrollRoot, {
+      attributeFilter: [
+        "data-contact-anchored",
+        "data-menu-scroll-target",
+      ],
+      attributes: true,
+    });
+    processScrollPosition();
+
+    return () => {
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+        scrollFrameRef.current = null;
+      }
+
+      scrollRoot.removeEventListener("scroll", schedulePositionCheck);
+      navigationObserver.disconnect();
+      delete section.dataset.resumeEntryActive;
+      previousResumeTopRef.current = null;
+      previousScrollTopRef.current = null;
+      isInResumeBandRef.current = false;
+      isSuppressingForContactRef.current = false;
+      clearRevealTimer();
+      clearTransitionTimer();
+    };
+  }, [
+    clearRevealTimer,
+    clearTransitionTimer,
+    resetForEntry,
+    showContentWithoutReveal,
+    updateRevealState,
+  ]);
 
   const isContentAccessible = revealState === "content";
 
@@ -266,7 +335,6 @@ export function ResumeSection() {
           className={styles.resumeIntroTracking}
           data-cursor-active={isActive}
           data-cursor-enabled={isEnabled}
-          onPointerMove={handlePointerMove}
           ref={trackingRef}
         >
           <span
