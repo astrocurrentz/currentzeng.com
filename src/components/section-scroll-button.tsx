@@ -8,7 +8,6 @@ export type SectionId =
   | "intro"
   | "engineering"
   | "area"
-  | "resume-intro"
   | "resume";
 
 type SectionScrollButtonProps = {

@@ -1,16 +1,33 @@
-.resumeIntroSection,
 .resumeSection {
   position: relative;
   isolation: isolate;
-  min-height: var(--resume-section-min-block);
+  min-height: max(var(--resume-section-min-block), 100svh);
   background: var(--resume-section-background);
   color: var(--resume-section-foreground);
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
 
-.resumeIntroSection {
+.resumeHero {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  height: max(var(--resume-section-min-block), 100svh);
+  margin-bottom: -100svh;
+  background: var(--resume-section-background);
   overflow: hidden;
+  opacity: 1;
+  transition: opacity 400ms ease;
+}
+
+.resumeSection[data-resume-state="transitioning"] .resumeHero,
+.resumeSection[data-resume-state="content"] .resumeHero {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.resumeSection[data-resume-state="content"] .resumeHero {
+  visibility: hidden;
 }
 
 .resumeIntroTracking {
@@ -100,17 +117,33 @@
   transform: translate(-50%, -50%);
 }
 
-.resumeSection {
+.resumeContentLayer {
+  position: relative;
+  z-index: 1;
   display: flex;
   min-height: max(var(--resume-section-min-block), 100svh);
   align-items: flex-start;
   justify-content: center;
   overflow: visible;
+  opacity: 0;
   padding:
     max(2rem, calc(env(safe-area-inset-top) + 2rem))
     max(1rem, calc(env(safe-area-inset-right) + 1rem))
     max(2rem, calc(env(safe-area-inset-bottom) + 2rem))
     max(1rem, calc(env(safe-area-inset-left) + 1rem));
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 400ms ease;
+}
+
+.resumeSection[data-resume-state="transitioning"] .resumeContentLayer,
+.resumeSection[data-resume-state="content"] .resumeContentLayer {
+  opacity: 1;
+  visibility: visible;
+}
+
+.resumeSection[data-resume-state="content"] .resumeContentLayer {
+  pointer-events: auto;
 }
 
 .resumeContent { width: min(100%, 64rem); }
@@ -153,7 +186,7 @@
     font-size: clamp(4.25rem, 22vw, 7.75rem);
   }
 
-  .resumeSection {
+  .resumeContentLayer {
     padding:
       max(1rem, calc(env(safe-area-inset-top) + 1rem))
       max(0.75rem, calc(env(safe-area-inset-right) + 0.75rem))
@@ -167,6 +200,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .resumeHero,
+  .resumeContentLayer {
+    transition: none;
+  }
+
   .resumeCursor {
     display: none;
   }

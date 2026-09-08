@@ -31,9 +31,6 @@ export const designTokens = {
       pressReleaseMs: 280,
       pressScrollDelayMs: 120,
     },
-    resumeIntroSection: {
-      minBlockSize: "100svh",
-    },
     resumeSection: {
       minBlockSize: "100svh",
     },

@@ -264,7 +264,7 @@ export function SystemsShowcase({ isActive }: SystemsShowcaseProps) {
             className={styles.continueButton}
             direction="down"
             placement="bottom"
-            targetSection="resume-intro"
+            targetSection="resume"
           />
         ) : null}
       </div>

@@ -6,7 +6,6 @@ import { AreaSection } from "@/components/area-section";
 import { BrandWordmark } from "@/components/brand-wordmark";
 import { LandingStage } from "@/components/landing-stage";
 import { PortfolioFooter } from "@/components/portfolio-footer";
-import { ResumeIntroSection } from "@/components/resume-intro-section";
 import { ResumeSection } from "@/components/resume-section";
 import { SectionScrollButton } from "@/components/section-scroll-button";
 import { SecondSection } from "@/components/second-section";
@@ -42,7 +41,6 @@ export function LandingPage() {
         <SecondSection />
         <EngineeringSection />
         <AreaSection />
-        <ResumeIntroSection />
         <ResumeSection />
       </main>
       <PortfolioFooter />

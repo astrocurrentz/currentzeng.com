@@ -79,7 +79,7 @@ async function expectContactAlignment(page: Page) {
 }
 
 async function openBazi(page: Page) {
-  await page.goto("/#area");
+  await page.goto("/#area", { waitUntil: "domcontentloaded" });
   await page
     .getByRole("button", { name: "Open systems area", exact: true })
     .click();
@@ -99,7 +99,7 @@ async function openBazi(page: Page) {
 test("landing navigation and direct engineering links expose real experience", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   const navigation = page.getByRole("navigation", {
     name: "Portfolio",
     exact: true,
@@ -121,7 +121,11 @@ test("landing navigation and direct engineering links expose real experience", a
   ).toBeVisible();
   await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
   await expectTextSectionAlignment(page, "resume");
-  await expect(page.locator("#resume-heading")).toBeInViewport();
+  await expect(page.locator("#resume")).toHaveAttribute(
+    "data-resume-state",
+    "hero",
+  );
+  await expect(page.locator("#resume-intro-heading")).toBeInViewport();
   await navigation.getByRole("link", { name: "Contact", exact: true }).click();
   await expectContactAlignment(page);
   await expect(
@@ -131,7 +135,7 @@ test("landing navigation and direct engineering links expose real experience", a
     .getByRole("link", { name: "Engineering", exact: true })
     .click();
   await expectTextSectionAlignment(page, "engineering");
-  await page.goto("/#engineering");
+  await page.goto("/#engineering", { waitUntil: "domcontentloaded" });
   await expectTextSectionAlignment(page, "engineering");
   await expect(
     page.getByRole("heading", { name: "Engineering", exact: true }),
@@ -141,7 +145,7 @@ test("landing navigation and direct engineering links expose real experience", a
 test("Creative work reaches the viewport top with one click from a stale hash", async ({
   page,
 }) => {
-  await page.goto("/#area");
+  await page.goto("/#area", { waitUntil: "domcontentloaded" });
   await expectFlushAlignment(page, "area");
 
   await page
@@ -165,7 +169,7 @@ test("Creative work reaches the viewport top with one click from a stale hash", 
 test("a new menu selection cancels and retargets an active scroll", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   const navigation = page.getByRole("navigation", { name: "Portfolio" });
 
   await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
@@ -180,7 +184,7 @@ test("a new menu selection cancels and retargets an active scroll", async ({
 test("menu history restores earlier sections and the landing page", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   const navigation = page.getByRole("navigation", { name: "Portfolio" });
 
   await navigation
@@ -190,10 +194,10 @@ test("menu history restores earlier sections and the landing page", async ({
   await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
   await expectTextSectionAlignment(page, "resume");
 
-  await page.goBack();
+  await page.goBack({ waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/#engineering$/);
   await expectTextSectionAlignment(page, "engineering");
-  await page.goBack();
+  await page.goBack({ waitUntil: "domcontentloaded" });
   await expect(page).not.toHaveURL(/#/);
   await expectFlushAlignment(page, "landing");
 });
@@ -202,7 +206,7 @@ test("keyboard menu activation focuses the target without animation", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   const creativeWorkLink = page
     .getByRole("navigation", { name: "Portfolio" })
     .getByRole("link", { name: "Creative work", exact: true });
@@ -218,7 +222,7 @@ test("all résumé downloads and the viewer use one working PDF", async ({
   page,
   request,
 }) => {
-  await page.goto("/#resume");
+  await page.goto("/#resume", { waitUntil: "domcontentloaded" });
   const links = page.locator('a[href$=".pdf"]');
   expect(await links.count()).toBeGreaterThanOrEqual(4);
   for (const link of await links.all())
@@ -244,8 +248,12 @@ test("résumé hover follows the pointer without shifting layout", async ({
 }) => {
   test.skip(isMobile, "The custom résumé cursor is desktop-only.");
 
-  await page.goto("/#resume-intro");
-  const section = page.locator("#resume-intro");
+  const pausedTime = new Date("2026-09-07T12:00:00Z");
+  await page.clock.install({ time: pausedTime });
+  await page.clock.pauseAt(pausedTime);
+  await page.goto("/#resume", { waitUntil: "domcontentloaded" });
+  await page.clock.runFor(100);
+  const section = page.locator("#resume");
   const tracking = section.locator("[data-cursor-enabled]");
   const title = section.locator("#resume-intro-heading");
   const text = section.locator("[data-variable-font-text]");
@@ -258,6 +266,10 @@ test("résumé hover follows the pointer without shifting layout", async ({
   const trackingBox = await tracking.boundingBox();
   const sectionBoxBefore = await section.boundingBox();
   const titleBoxBefore = await title.boundingBox();
+  const titleOffsetBefore = {
+    x: titleBoxBefore!.x - sectionBoxBefore!.x,
+    y: titleBoxBefore!.y - sectionBoxBefore!.y,
+  };
   const initialFontSettings = await text.evaluate(
     (element) => getComputedStyle(element).fontVariationSettings,
   );
@@ -270,6 +282,7 @@ test("résumé hover follows the pointer without shifting layout", async ({
     trackingBox!.x + trackingBox!.width * 0.15,
     trackingBox!.y + trackingBox!.height * 0.2,
   );
+  await page.clock.runFor(500);
 
   await expect(tracking).toHaveAttribute("data-cursor-active", "true");
   await expect.poll(
@@ -292,7 +305,7 @@ test("résumé hover follows the pointer without shifting layout", async ({
   const sectionBoxAfter = await section.boundingBox();
   const titleBoxAfter = await title.boundingBox();
 
-  for (const property of ["x", "y", "width", "height"] as const) {
+  for (const property of ["width", "height"] as const) {
     expect(sectionBoxAfter?.[property]).toBeCloseTo(
       sectionBoxBefore![property],
       1,
@@ -302,8 +315,17 @@ test("résumé hover follows the pointer without shifting layout", async ({
       1,
     );
   }
+  expect(titleBoxAfter!.x - sectionBoxAfter!.x).toBeCloseTo(
+    titleOffsetBefore.x,
+    1,
+  );
+  expect(titleBoxAfter!.y - sectionBoxAfter!.y).toBeCloseTo(
+    titleOffsetBefore.y,
+    1,
+  );
 
   await tracking.dispatchEvent("pointerleave", { pointerType: "mouse" });
+  await page.clock.runFor(500);
   await expect(tracking).toHaveAttribute("data-cursor-active", "false");
   await expect.poll(
     () =>
@@ -321,10 +343,13 @@ test("résumé hover remains static for reduced motion and coarse pointers", asy
     await page.emulateMedia({ reducedMotion: "reduce" });
   }
 
-  await page.goto("/#resume-intro");
-  const section = page.locator("#resume-intro");
+  const pausedTime = new Date("2026-09-07T12:00:00Z");
+  await page.clock.install({ time: pausedTime });
+  await page.clock.pauseAt(pausedTime);
+  await page.goto("/#resume", { waitUntil: "domcontentloaded" });
+  const section = page.locator("#resume");
   const tracking = section.locator("[data-cursor-enabled]");
-  const cursor = section.locator('[aria-hidden="true"]').first();
+  const cursor = section.locator("[data-resume-cursor-layer]");
   const text = section.locator("[data-variable-font-text]");
   const trackingBox = await tracking.boundingBox();
   const initialFontSettings = await text.evaluate(
@@ -338,7 +363,7 @@ test("résumé hover remains static for reduced motion and coarse pointers", asy
     trackingBox!.x + trackingBox!.width * 0.15,
     trackingBox!.y + trackingBox!.height * 0.2,
   );
-  await page.waitForTimeout(150);
+  await page.clock.runFor(150);
 
   await expect(tracking).toHaveAttribute("data-cursor-active", "false");
   expect(
@@ -414,7 +439,7 @@ test("nested picker closes independently and clears selected glyphs", async ({
 });
 
 test("visual preview closes back to its project", async ({ page }) => {
-  await page.goto("/#area");
+  await page.goto("/#area", { waitUntil: "domcontentloaded" });
   await page
     .getByRole("button", { name: "Open eyes area", exact: true })
     .click();
@@ -436,7 +461,7 @@ test("engineering content reflows at narrow widths and enlarged text", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 780 });
-  await page.goto("/#engineering");
+  await page.goto("/#engineering", { waitUntil: "domcontentloaded" });
   await page.addStyleTag({ content: "html { font-size: 200%; }" });
   const section = page.locator("#engineering");
   const overflow = await section.evaluate(
@@ -452,7 +477,7 @@ test("reduced motion preserves readable text and key areas pass accessibility ch
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/#engineering");
+  await page.goto("/#engineering", { waitUntil: "domcontentloaded" });
   const overview = await new AxeBuilder({ page })
     .include("#engineering")
     .analyze();
@@ -476,7 +501,7 @@ test("reduced motion preserves readable text and key areas pass accessibility ch
 test("Freewill artwork picker is keyboard accessible and nested dismissal preserves the gallery", async ({
   page,
 }) => {
-  await page.goto("/#area");
+  await page.goto("/#area", { waitUntil: "domcontentloaded" });
   await page
     .getByRole("button", { name: "Open eyes area", exact: true })
     .click();

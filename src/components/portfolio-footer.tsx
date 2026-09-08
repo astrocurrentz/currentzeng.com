@@ -100,7 +100,13 @@ export function PortfolioFooter() {
         : "";
 
   return (
-    <footer id="contact" tabIndex={-1} className={styles.footer} style={footerStyle}>
+    <footer
+      className={styles.footer}
+      data-section-id="contact"
+      id="contact"
+      style={footerStyle}
+      tabIndex={-1}
+    >
       <p aria-hidden="true" className={styles.wordmark}>
         {siteCopy.footer.wordmark}
       </p>
