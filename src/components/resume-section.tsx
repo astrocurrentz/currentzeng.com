@@ -4,7 +4,7 @@ import { Afacad_Flux } from "next/font/google";
 import { motion } from "motion/react";
 import {
   useCallback,
-  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -48,6 +48,7 @@ const resumeTitleFontVariationMapping = {
 
 const revealDelayMs = 2500;
 const revealTransitionDurationMs = 400;
+const resumeIntroSessionStorageKey = "currentzeng:resume-intro:v1";
 
 type ResumeRevealState = "hero" | "transitioning" | "content";
 
@@ -66,6 +67,7 @@ export function ResumeSection() {
   const previousScrollTopRef = useRef<number | null>(null);
   const isInResumeBandRef = useRef(false);
   const isSuppressingForContactRef = useRef(false);
+  const hasConsumedIntroRef = useRef(false);
   const [revealState, setRevealState] =
     useState<ResumeRevealState>("hero");
   const { cursorX, cursorY, isActive, isEnabled, position } =
@@ -140,7 +142,7 @@ export function ResumeSection() {
     updateRevealState("content");
   }, [clearRevealTimer, clearTransitionTimer, updateRevealState]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const section = sectionRef.current;
     const scrollRoot = document.querySelector<HTMLElement>(
       "[data-section-scroll-root]",
@@ -148,6 +150,13 @@ export function ResumeSection() {
 
     if (!section || !scrollRoot) {
       return;
+    }
+
+    try {
+      hasConsumedIntroRef.current =
+        window.sessionStorage.getItem(resumeIntroSessionStorageKey) === "true";
+    } catch {
+      // Keep the in-memory value when storage is unavailable.
     }
 
     const readPosition = () => {
@@ -171,6 +180,24 @@ export function ResumeSection() {
     };
 
     const activateEntry = () => {
+      if (isInResumeBandRef.current) {
+        return;
+      }
+
+      if (hasConsumedIntroRef.current) {
+        isInResumeBandRef.current = false;
+        delete section.dataset.resumeEntryActive;
+        showContentWithoutReveal();
+        return;
+      }
+
+      hasConsumedIntroRef.current = true;
+      try {
+        window.sessionStorage.setItem(resumeIntroSessionStorageKey, "true");
+      } catch {
+        // The ref still provides once-per-page behavior without storage.
+      }
+
       isInResumeBandRef.current = true;
       section.dataset.resumeEntryActive = "true";
       resetForEntry();
@@ -181,7 +208,9 @@ export function ResumeSection() {
       delete section.dataset.resumeEntryActive;
       clearRevealTimer();
       clearTransitionTimer();
-      updateRevealState("hero");
+      updateRevealState(
+        hasConsumedIntroRef.current ? "content" : "hero",
+      );
     };
 
     const suppressForContact = () => {

@@ -155,7 +155,7 @@ test("Contact navigation bypasses the résumé hero during transit", async ({
   await expect(resume).toHaveAttribute("data-resume-state", "content");
 });
 
-test("résumé hero resets after navigation and manual re-entry", async ({
+test("résumé hero runs once across navigation and manual re-entry", async ({
   isMobile,
   page,
 }) => {
@@ -180,9 +180,6 @@ test("résumé hero resets after navigation and manual re-entry", async ({
     "data-menu-scrolling",
     "true",
   );
-  await expect(section).toHaveAttribute("data-resume-state", "hero");
-
-  await page.clock.runFor(2500);
   await expect(section).toHaveAttribute("data-resume-state", "content");
   await page.locator(scrollRootSelector).evaluate((scrollRoot) => {
     const area = document.querySelector<HTMLElement>("#area");
@@ -202,8 +199,76 @@ test("résumé hero resets after navigation and manual re-entry", async ({
   });
   await page.clock.runFor(100);
   await expect(section).toBeInViewport();
-  await expect(section).toHaveAttribute("data-resume-entry-active", "true");
+  await expect(section).not.toHaveAttribute(
+    "data-resume-entry-active",
+    "true",
+  );
+  await expect(section).toHaveAttribute("data-resume-state", "content");
+});
+
+test("résumé intro remains consumed after a reload in the same tab", async ({
+  page,
+}) => {
+  const section = await openResumeWithPausedClock(page);
+  await page.clock.runFor(3000);
+  await expect(section).toHaveAttribute("data-resume-state", "content");
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.clock.runFor(100);
+
+  await expect(page.locator("#resume")).toHaveAttribute(
+    "data-resume-state",
+    "content",
+  );
+  await expect(page.locator("#resume")).not.toHaveAttribute(
+    "data-resume-entry-active",
+    "true",
+  );
+});
+
+test("a fresh browser tab session receives the résumé intro", async ({
+  context,
+}) => {
+  const firstPage = await context.newPage();
+  await firstPage.goto("/#resume", { waitUntil: "domcontentloaded" });
+  await expect(firstPage.locator("#resume")).toHaveAttribute(
+    "data-resume-state",
+    "hero",
+  );
+  await firstPage.close();
+
+  const secondPage = await context.newPage();
+  await secondPage.goto("/#resume", { waitUntil: "domcontentloaded" });
+  await expect(secondPage.locator("#resume")).toHaveAttribute(
+    "data-resume-state",
+    "hero",
+  );
+  await secondPage.close();
+});
+
+test("Contact-first navigation preserves the résumé intro", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const navigation = page.getByRole("navigation", { name: "Portfolio" });
+  const section = page.locator("#resume");
+
+  await navigation.getByRole("link", { name: "Contact", exact: true }).click();
+  await expect(page.locator(scrollRootSelector)).toHaveAttribute(
+    "data-contact-anchored",
+    "true",
+  );
+  await expect(section).toHaveAttribute("data-resume-state", "content");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        sessionStorage.getItem("currentzeng:resume-intro:v1"),
+      ),
+    )
+    .toBeNull();
+
+  await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
+  await expectFlushAlignment(page, "resume");
   await expect(section).toHaveAttribute("data-resume-state", "hero");
+  await expect(section).toHaveAttribute("data-resume-entry-active", "true");
 });
 
 test("large and fractional scroll jumps cannot strand the résumé hero", async ({
@@ -252,8 +317,11 @@ test("large and fractional scroll jumps cannot strand the résumé hero", async 
       top: (resume?.offsetTop ?? 0) + 0.5,
     });
   });
-  await expect(section).toHaveAttribute("data-resume-entry-active", "true");
-  await expect(section).toHaveAttribute("data-resume-state", "hero");
+  await expect(section).not.toHaveAttribute(
+    "data-resume-entry-active",
+    "true",
+  );
+  await expect(section).toHaveAttribute("data-resume-state", "content");
 
   await page.waitForTimeout(500);
   await scrollRoot.evaluate((root) => {
@@ -265,13 +333,16 @@ test("large and fractional scroll jumps cannot strand the résumé hero", async 
     "true",
   );
   await page.waitForTimeout(2500);
-  await expect(section).toHaveAttribute("data-resume-state", "hero");
+  await expect(section).toHaveAttribute("data-resume-state", "content");
 
   await scrollRoot.evaluate((root) => {
     const resume = document.querySelector<HTMLElement>("#resume");
     root.scrollTo({ behavior: "auto", top: resume?.offsetTop ?? 0 });
   });
-  await expect(section).toHaveAttribute("data-resume-entry-active", "true");
+  await expect(section).not.toHaveAttribute(
+    "data-resume-entry-active",
+    "true",
+  );
   await expect(section).toHaveAttribute("data-resume-state", "content", {
     timeout: 4000,
   });

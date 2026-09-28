@@ -186,7 +186,7 @@ test("a new menu selection cancels and retargets an active Contact scroll", asyn
   await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
 
   await expectFlushAlignment(page, "resume");
-  await expect(resume).toHaveAttribute("data-resume-state", "hero");
+  await expect(resume).toHaveAttribute("data-resume-state", "content");
   await expect(page.locator(scrollRootSelector)).not.toHaveAttribute(
     "data-menu-scroll-target",
     /.+/,
