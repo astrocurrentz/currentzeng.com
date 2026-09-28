@@ -246,6 +246,64 @@ test("a fresh browser tab session receives the résumé intro", async ({
   await secondPage.close();
 });
 
+for (const destination of ["Creative work", "Engineering"]) {
+  test(`Contact → ${destination} does not consume the résumé intro`, async ({ page }) => {
+    await page.goto("/#contact", { waitUntil: "domcontentloaded" });
+    const root = page.locator(scrollRootSelector);
+    const section = page.locator("#resume");
+    const navigation = page.getByRole("navigation", { name: "Portfolio", exact: true });
+    await expect(root).toHaveAttribute("data-contact-anchored", "true");
+    await section.evaluate((element) => {
+      element.setAttribute("data-test-hero-activated", "false");
+      new MutationObserver(() => {
+        if (element.getAttribute("data-resume-state") !== "content") {
+          element.setAttribute("data-test-hero-activated", "true");
+        }
+      }).observe(element, { attributes: true, attributeFilter: ["data-resume-state"] });
+    });
+    await navigation.getByRole("link", { name: destination, exact: true }).click();
+    await expect(root).not.toHaveAttribute("data-menu-scrolling", "true");
+    await expect(section).toHaveAttribute("data-test-hero-activated", "false");
+    expect(await page.evaluate(() => sessionStorage.getItem("currentzeng:resume-intro:v1"))).toBeNull();
+    await navigation.getByRole("link", { name: "Résumé", exact: true }).click();
+    await expectFlushAlignment(page, "resume");
+    await expect(section).toHaveAttribute("data-resume-entry-active", "true");
+    await expect(section).toHaveAttribute("data-resume-state", "hero");
+  });
+}
+
+test("consumed résumé stays content after reloading at Creative work", async ({ page }) => {
+  await page.goto("/#resume", { waitUntil: "domcontentloaded" });
+  const section = page.locator("#resume");
+  await expect(section).toHaveAttribute("data-resume-entry-active", "true");
+  await page.getByRole("navigation", { name: "Portfolio", exact: true })
+    .getByRole("link", { name: "Creative work", exact: true }).click();
+  await expectFlushAlignment(page, "area");
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expectFlushAlignment(page, "area");
+  await expect(section).toHaveAttribute("data-resume-state", "content");
+});
+
+test("scrolling up from Contact waits for the résumé entry band", async ({ page }) => {
+  await page.goto("/#contact", { waitUntil: "domcontentloaded" });
+  const root = page.locator(scrollRootSelector);
+  const section = page.locator("#resume");
+  await expect(root).toHaveAttribute("data-contact-anchored", "true");
+  await root.evaluate((element) => {
+    element.style.scrollSnapType = "none";
+    element.scrollTo({ top: element.scrollTop - 40, behavior: "auto" });
+  });
+  await expect(root).not.toHaveAttribute("data-contact-anchored", "true");
+  await expect(section).toHaveAttribute("data-resume-state", "content");
+  expect(await page.evaluate(() => sessionStorage.getItem("currentzeng:resume-intro:v1"))).toBeNull();
+  await root.evaluate((element) => {
+    const resume = document.querySelector("#resume")!;
+    element.scrollTo({ top: element.scrollTop + resume.getBoundingClientRect().top - element.getBoundingClientRect().top, behavior: "auto" });
+  });
+  await expect(section).toHaveAttribute("data-resume-entry-active", "true");
+  await expect(section).toHaveAttribute("data-resume-state", "hero");
+});
+
 test("Contact-first navigation preserves the résumé intro", async ({ page }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const navigation = page.getByRole("navigation", { name: "Portfolio" });

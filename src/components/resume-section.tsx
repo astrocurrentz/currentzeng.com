@@ -48,6 +48,7 @@ const resumeTitleFontVariationMapping = {
 
 const revealDelayMs = 2500;
 const revealTransitionDurationMs = 400;
+const entryTolerancePx = 2;
 const resumeIntroSessionStorageKey = "currentzeng:resume-intro:v1";
 
 type ResumeRevealState = "hero" | "transitioning" | "content";
@@ -66,7 +67,6 @@ export function ResumeSection() {
   const previousResumeTopRef = useRef<number | null>(null);
   const previousScrollTopRef = useRef<number | null>(null);
   const isInResumeBandRef = useRef(false);
-  const isSuppressingForContactRef = useRef(false);
   const hasConsumedIntroRef = useRef(false);
   const [revealState, setRevealState] =
     useState<ResumeRevealState>("hero");
@@ -154,15 +154,20 @@ export function ResumeSection() {
 
     try {
       hasConsumedIntroRef.current =
+        hasConsumedIntroRef.current ||
         window.sessionStorage.getItem(resumeIntroSessionStorageKey) === "true";
     } catch {
       // Keep the in-memory value when storage is unavailable.
     }
 
+    if (hasConsumedIntroRef.current) {
+      showContentWithoutReveal();
+    }
+
     const readPosition = () => {
       const rootRect = scrollRoot.getBoundingClientRect();
       const sectionRect = section.getBoundingClientRect();
-      const entryBandTop = rootRect.top;
+      const entryBandTop = rootRect.top - entryTolerancePx;
       const entryBandBottom = rootRect.top + rootRect.height * 0.25;
 
       return {
@@ -213,8 +218,7 @@ export function ResumeSection() {
       );
     };
 
-    const suppressForContact = () => {
-      isSuppressingForContactRef.current = true;
+    const suppressEntry = () => {
       isInResumeBandRef.current = false;
       delete section.dataset.resumeEntryActive;
       showContentWithoutReveal();
@@ -226,47 +230,34 @@ export function ResumeSection() {
       const position = readPosition();
       const previousTop = previousResumeTopRef.current;
       const previousScrollTop = previousScrollTopRef.current;
-      const isContactNavigation =
-        scrollRoot.dataset.menuScrollTarget === "contact";
+      const navigationTarget = scrollRoot.dataset.menuScrollTarget;
+      const isOtherNavigation =
+        Boolean(navigationTarget) && navigationTarget !== "resume";
       const isContactAnchored =
         scrollRoot.dataset.contactAnchored === "true";
 
-      if (isContactNavigation || isContactAnchored) {
-        suppressForContact();
+      if (isOtherNavigation || isContactAnchored) {
+        suppressEntry();
         previousResumeTopRef.current = position.resumeTop;
         previousScrollTopRef.current = position.scrollTop;
         return;
       }
 
-      const suppressionEnded = isSuppressingForContactRef.current;
-      isSuppressingForContactRef.current = false;
-
-      const enteredBand =
-        position.isTopInBand &&
-        (previousTop === null ||
-          previousTop < position.entryBandTop ||
-          previousTop > position.entryBandBottom);
       const crossedBandDownward =
         previousTop !== null &&
         previousTop > position.entryBandBottom &&
-        position.resumeTop < position.entryBandTop;
-      const initializedWithinResume =
-        previousTop === null && position.isSectionVisible;
-      const interruptedContactWithinResume =
-        suppressionEnded && position.isSectionVisible;
+        position.resumeTop < position.entryBandTop &&
+        position.isSectionVisible;
       const backedOutUpward =
         previousScrollTop !== null &&
         position.scrollTop < previousScrollTop - 1 &&
         position.resumeTop > position.entryBandBottom;
 
       if (
-        enteredBand ||
-        crossedBandDownward ||
-        initializedWithinResume ||
-        interruptedContactWithinResume
+        position.isTopInBand || crossedBandDownward
       ) {
         activateEntry();
-      } else if (backedOutUpward) {
+      } else if (backedOutUpward && isInResumeBandRef.current) {
         // Only backing out toward earlier sections cancels an active entry.
         // A downward overshoot keeps the timer alive so the hero cannot stick.
         deactivateEntry();
@@ -286,23 +277,8 @@ export function ResumeSection() {
       );
     };
 
-    const synchronizeNavigationTarget = () => {
-      if (
-        scrollRoot.dataset.menuScrollTarget === "contact" ||
-        scrollRoot.dataset.contactAnchored === "true"
-      ) {
-        suppressForContact();
-        const position = readPosition();
-        previousResumeTopRef.current = position.resumeTop;
-        previousScrollTopRef.current = position.scrollTop;
-        return;
-      }
-
-      processScrollPosition();
-    };
-
     const navigationObserver = new MutationObserver(
-      synchronizeNavigationTarget,
+      processScrollPosition,
     );
 
     scrollRoot.addEventListener("scroll", schedulePositionCheck, {
@@ -329,7 +305,6 @@ export function ResumeSection() {
       previousResumeTopRef.current = null;
       previousScrollTopRef.current = null;
       isInResumeBandRef.current = false;
-      isSuppressingForContactRef.current = false;
       clearRevealTimer();
       clearTransitionTimer();
     };
