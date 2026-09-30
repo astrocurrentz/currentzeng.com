@@ -40,12 +40,12 @@ Before publication, check desktop Safari/Chrome, physical iPhone Safari, keyboar
 
 ## Résumé publication
 
-The public PDF is an exact copy of the supplied `Current_Zeng_Apple_Creativity_Apps_SDET 3.pdf`. The engineering summaries have been reconciled against this version.
+The public PDF is an exact copy of the supplied `Current_Zeng_General_Resume_v2.pdf`. The website's engineering summaries are maintained separately and were not changed with this PDF replacement.
 
 All résumé links use `public/resumes/current-zeng-resume-long-pager.pdf` to preserve existing URLs. The native viewer supports the PDF's actual pages without positioned HTML hotspots or an assumed combined-page aspect ratio. Visible HTML download and project links remain available outside the viewer.
 
 For future replacements, inspect every page for spelling, grammar, clipping, and readability; reconcile the website summaries; then copy the approved PDF to the existing public path and compare the served bytes with the source. Run the verification commands before publishing.
 
-The current supplied PDF renders correctly, but some extracted text has character-mapping errors (for example, “software” can extract as “soDware”). It is preserved unchanged. A fresh export with correct Unicode mappings would improve automated parsing.
+The current supplied PDF has two letter-size pages. Both pages have been visually checked, and text extraction was verified before publication.
 
 The verification workflow does not itself deploy the website.
