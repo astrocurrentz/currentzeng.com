@@ -40,7 +40,7 @@ Before publication, check desktop Safari/Chrome, physical iPhone Safari, keyboar
 
 ## Résumé publication
 
-The public PDF is an exact copy of the supplied `Current_Zeng_General_Resume_v2.pdf`. The website's engineering summaries are maintained separately and were not changed with this PDF replacement.
+The public PDF is an exact copy of the supplied `Current_Zeng_General_Resume_v3.pdf`. The website's engineering summaries are maintained separately and were not changed with this PDF replacement.
 
 All résumé links use `public/resumes/current-zeng-resume-long-pager.pdf` to preserve existing URLs. The native viewer supports the PDF's actual pages without positioned HTML hotspots or an assumed combined-page aspect ratio. Visible HTML download and project links remain available outside the viewer.
 
